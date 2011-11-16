@@ -1,0 +1,101 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!-- $Id$ -->
+<beans xmlns = "http://www.springframework.org/schema/beans"
+	xmlns:context = "http://www.springframework.org/schema/context"
+	xmlns:util = "http://www.springframework.org/schema/util"
+	xmlns:p = "http://www.springframework.org/schema/p"
+	xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+	<context:mbean-export/>
+	
+	<util:set
+		id = "allowedExtensions">
+		<value>jpg</value>
+		<value>jpeg</value>
+		<value>avi</value>
+		<value>mp4</value>
+		<value>3gp</value>
+	</util:set>
+
+	<util:set
+		id = "ignoredExtensions">
+		<value>ini</value> <!-- picasa.ini -->
+		<value>db</value> <!-- Thumbs.db -->
+		<value>DS_Store</value>
+	</util:set>
+	
+	<bean
+		id = "predicate"
+		class = "com.google.common.base.Predicates"
+		factory-method = "and">
+		<constructor-arg>
+			<util:list>
+				<bean
+					class = "com.google.code.synctimestamps.io.predicates.FileExists"/>
+				<bean
+					class = "com.google.common.base.Predicates"
+					factory-method = "or">
+					<constructor-arg>
+						<util:list>
+							<bean
+								class = "com.google.common.base.Predicates"
+								factory-method = "and">
+								<constructor-arg>
+									<util:list>
+										<bean
+											class = "com.google.code.synctimestamps.io.predicates.RegularFile"/>
+										<bean
+											class = "com.google.code.synctimestamps.io.predicates.AllowedExtensions">
+											<constructor-arg ref = "allowedExtensions"/>
+										</bean>
+									</util:list>
+								</constructor-arg>
+							</bean>
+							<bean
+								class = "com.google.code.synctimestamps.io.predicates.IgnoredExtensions">
+								<constructor-arg ref = "ignoredExtensions"/>
+							</bean>
+						</util:list>
+					</constructor-arg>
+				</bean>
+			</util:list>
+		</constructor-arg>
+	</bean>
+
+
+	<bean
+		id = "exifBased"
+		class = "com.google.code.synctimestamps.SanselanProvider"
+		p:next-ref = "fileNameBased"/>
+
+	<!-- This one could be used as an alternative for "exifBased" -->
+	<bean
+		id = "exifBased2"
+		class = "com.google.code.synctimestamps.MetadataExtractorProvider"
+		p:next-ref = "fileNameBased"/>
+
+	<bean
+		id = "fileNameBased"
+		class = "com.google.code.synctimestamps.FileNameBased"
+		p:fileNamePattern = "(\d{4}\-\d{2}\-\d{2}_\d{2}\-\d{2}\-\d{2})_(.*)"
+		p:dateFormatPattern = "yyyy-MM-dd_HH-mm-ss"
+		p:separator = "_"
+		p:next-ref = "mtimeBased"/>
+	
+	<bean
+		id = "mtimeBased"
+		class = "com.google.code.synctimestamps.MtimeBased"
+		p:next-ref = "fileNameBased2"/>
+
+	<!-- This last one is required for the file to get renamed
+		in case EXIF information is absent
+		and file timestamp is only available from its MTime.-->
+	<bean
+		id = "fileNameBased2"
+		class = "com.google.code.synctimestamps.FileNameBased"
+		p:fileNamePattern = "(\d{4}\-\d{2}\-\d{2}_\d{2}\-\d{2}\-\d{2})_(.*)"
+		p:dateFormatPattern = "yyyy-MM-dd_HH-mm-ss"
+		p:separator = "_"/>
+</beans>
