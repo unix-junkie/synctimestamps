@@ -23,6 +23,11 @@ import org.apache.sanselan.formats.tiff.constants.TiffTagConstants;
  * @version $Revision$, $Date$
  */
 public final class SanselanProvider extends AbstractDateTimeProvider implements ExifBased {
+	private static final String DATE_PATTERNS[] = {
+		"yyyy:MM:dd HH:mm:ss",
+		"yyyy-MM-dd HH:mm:ss",
+	};
+
 	/**
 	 * @see DateTimeProvider#getDateTime(File)
 	 */
@@ -33,7 +38,7 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			try {
 				metadata = Sanselan.getMetadata(file);
 			} catch (final IOException ioe) {
-				ioe.printStackTrace();
+				System.out.println("ERROR: " + file.getPath() + ": " + ioe.getMessage());
 				return null;
 			}
 			if (!(metadata instanceof JpegImageMetadata)) {
@@ -46,12 +51,23 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 				return null;
 			}
 			final String value = (String) field.getValue();
-			try {
-				final DateFormat format = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
-				return format.parse(value);
-			} catch (final ParseException pe) {
-				pe.printStackTrace();
+			/*
+			 * Malformed EXIF entry.
+			 */
+			if (value.equals("0000:00:00 00:00:00\0")) {
 				return null;
+			}
+			try {
+				final DateFormat format = new SimpleDateFormat(DATE_PATTERNS[0]);
+				return format.parse(value);
+			} catch (final ParseException pe0) {
+				try {
+					final DateFormat format = new SimpleDateFormat(DATE_PATTERNS[1]);
+					return format.parse(value);
+				} catch (final ParseException pe1) {
+					System.out.println("ERROR: " + file.getPath() + ": " + pe1.getMessage());
+					return null;
+				}
 			}
 		} catch (final ImageReadException ire) {
 			/*

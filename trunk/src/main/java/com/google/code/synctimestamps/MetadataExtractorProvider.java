@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
@@ -29,6 +30,7 @@ import com.drew.metadata.exif.ExifReader;
  * @version $Revision$, $Date$
  */
 public final class MetadataExtractorProvider extends AbstractDateTimeProvider implements ExifBased {
+	private static final byte EMPTY[] = new byte[0];
 	/**
 	 * @see DateTimeProvider#getDateTime(File)
 	 */
@@ -44,12 +46,27 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			final ImageReader imageReader = it.next();
 			imageReader.setInput(in);
 
-			final IIOMetadata imageMetadata = imageReader.getImageMetadata(0);
+			final IIOMetadata imageMetadata;
+			try {
+				imageMetadata = imageReader.getImageMetadata(0);
+			} catch (final IIOException iioe) {
+				System.out.println("ERROR: " + file.getPath() + ": " + iioe.getMessage());
+				return null;
+			}
 
-			final ExifReader exifReader = new ExifReader(getExifInfo(imageMetadata));
+			final byte[] exifInfo = getExifInfo(file, imageMetadata);
+			if (exifInfo.length == 0) {
+				return null;
+			}
+			final ExifReader exifReader = new ExifReader(exifInfo);
 			final Metadata metadata = exifReader.extract();
 			final Directory directory = metadata.getDirectory(ExifDirectory.class);
-			return directory.getDate(ExifDirectory.TAG_DATETIME);
+			if (!directory.containsTag(ExifDirectory.TAG_DATETIME)) {
+				return null;
+			}
+
+			final Date dateTime = directory.getDate(ExifDirectory.TAG_DATETIME);
+			return dateTime.getTime() < 0 ? null : dateTime;
 		} catch (final IOException ioe) {
 			ioe.printStackTrace();
 			return null;
@@ -60,11 +77,19 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 	}
 
 	/**
+	 * @param file
 	 * @param imageMetadata
 	 */
-	private static byte[] getExifInfo(final IIOMetadata imageMetadata) {
-		final IIOMetadataNode node = (IIOMetadataNode) imageMetadata.getAsTree("javax_imageio_jpeg_image_1.0");
-		return (byte[]) findExifNode(node).getUserObject();
+	private static byte[] getExifInfo(final File file, final IIOMetadata imageMetadata) {
+		final IIOMetadataNode rootNode;
+		try {
+			rootNode = (IIOMetadataNode) imageMetadata.getAsTree("javax_imageio_jpeg_image_1.0");
+		} catch (final IllegalArgumentException iae) {
+			System.out.println("ERROR: " + file.getPath() + ": " + iae.getMessage());
+			return EMPTY;
+		}
+		final IIOMetadataNode exifNode = findExifNode(rootNode);
+		return exifNode == null ? EMPTY : (byte[]) exifNode.getUserObject();
 	}
 
 	/**

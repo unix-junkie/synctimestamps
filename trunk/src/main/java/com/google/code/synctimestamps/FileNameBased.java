@@ -90,10 +90,11 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 			 */
 			return null;
 		}
-		final String dateTime = matcher.group(1);
+		final String dateTime0 = matcher.group(1);
 		try {
 			final DateFormat format = new SimpleDateFormat(this.dateFormatPattern);
-			return format.parse(dateTime);
+			final Date dateTime1 = format.parse(dateTime0);
+			return dateTime1.getTime() < 0 ? null : dateTime1;
 		} catch (final ParseException pe) {
 			pe.printStackTrace();
 			return null;
