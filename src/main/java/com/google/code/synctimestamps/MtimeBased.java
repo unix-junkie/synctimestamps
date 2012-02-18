@@ -28,7 +28,8 @@ public final class MtimeBased extends AbstractDateTimeProvider implements Writab
 		if (!this.getDateTime(file).equals(dateTime)) {
 			final String fileName = file.getName();
 			System.out.println("INFO: " + fileName + ": setting file MTime to " + dateTime);
-			if (!file.setLastModified(dateTime.getTime())) {
+			final long lastModified = dateTime.getTime();
+			if (lastModified < 0 || !file.setLastModified(lastModified)) {
 				System.out.println("ERROR: " + fileName + ": failed set file MTime to " + dateTime);
 			}
 		}
