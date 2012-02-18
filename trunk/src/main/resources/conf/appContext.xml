@@ -17,6 +17,8 @@
 		<value>avi</value>
 		<value>mp4</value>
 		<value>3gp</value>
+		<value>mov</value>
+		<value>wav</value>
 	</util:set>
 
 	<util:set
@@ -24,6 +26,18 @@
 		<value>ini</value> <!-- picasa.ini -->
 		<value>db</value> <!-- Thumbs.db -->
 		<value>DS_Store</value>
+		<value>txt</value>
+		
+		<!-- DVD -->
+		<value>bup</value>
+		<value>dat</value>
+		<value>ifo</value>
+		<value>vob</value>
+		
+		<!-- Image types not normally found on digital cameras -->
+		<value>psd</value>
+		<value>tiff</value>
+		<value>png</value>
 	</util:set>
 	
 	<bean
@@ -65,6 +79,7 @@
 	</bean>
 
 
+	<!-- This one is much faster, but not always better -->
 	<bean
 		id = "exifBased"
 		class = "com.google.code.synctimestamps.SanselanProvider"
