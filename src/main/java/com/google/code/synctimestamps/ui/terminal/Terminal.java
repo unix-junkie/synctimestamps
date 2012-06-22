@@ -48,6 +48,7 @@ public final class Terminal extends PrintWriter {
 	 * multiple keys are pressed simultaneously.
 	 *
 	 * @param sequence
+	 * @todo split on all control characters, not only escape (see {@link #firstIndexOfControlChar(char[], int)}). Still, it is only Escape who can start a sequence.
 	 */
 	public List<InputEvent> split(final char sequence[]) {
 		if (sequence.length == 0) {
@@ -137,4 +138,23 @@ public final class Terminal extends PrintWriter {
 		return -1;
 	}
 
+	/**
+	 * @param sequence
+	 * @param fromIndex
+	 */
+	private static int firstIndexOfControlChar(final char sequence[], final int fromIndex) {
+		for (int i = fromIndex; i < sequence.length; i++) {
+			if (isControlCharacter(sequence[i])) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * @param c
+	 */
+	public static boolean isControlCharacter(final char c) {
+		return 0 <= c && c <= 31 || c == 127;
+	}
 }

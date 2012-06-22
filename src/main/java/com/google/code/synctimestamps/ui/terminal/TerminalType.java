@@ -27,8 +27,13 @@ import static com.google.code.synctimestamps.ui.terminal.VtKey.PAGE_UP;
 import static com.google.code.synctimestamps.ui.terminal.VtKey.RIGHT;
 import static com.google.code.synctimestamps.ui.terminal.VtKey.UP;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+
+import com.google.common.base.Function;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -72,6 +77,45 @@ public enum TerminalType {
 	private final Map<InputEvent, VtKey> knownEscapeSequences = new HashMap<InputEvent, VtKey>();
 
 	/**
+	 * @todo Rewrite using prefix tree.
+	 */
+	private final List<ListEntry> knownVtResponses = new ArrayList<ListEntry>();
+
+	/**
+	 * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+	 * @author $Author$
+	 * @version $Revision$, $Date$
+	 */
+	private static final class ListEntry {
+		/**
+		 * Key.
+		 */
+		private final Pattern key;
+
+		/**
+		 * Value.
+		 */
+		private final Function<InputEvent, ? extends VtResponse> factory;
+
+		/**
+		 * @param key
+		 * @param factory
+		 */
+		ListEntry(final Pattern key, final Function<InputEvent, ? extends VtResponse> factory) {
+			this.key = key;
+			this.factory = factory;
+		}
+
+		Pattern getKey() {
+			return this.key;
+		}
+
+		public Function<InputEvent, ? extends VtResponse> getFactory() {
+			return this.factory;
+		}
+	}
+
+	/**
 	 * @param term
 	 */
 	private TerminalType(final String term) {
@@ -79,6 +123,31 @@ public enum TerminalType {
 	}
 
 	private void registerEscapeSequences() {
+		/*
+		 * All terminals.
+		 */
+		this.registerVtResponse(new Function<InputEvent, VtTerminalSize>() {
+			/**
+			 * @param from
+			 */
+			@Override
+			public VtTerminalSize apply(final InputEvent from) {
+				return new VtTerminalSize(from);
+			}
+		}, VtTerminalSize.PATTERN);
+		this.registerVtResponse(new Function<InputEvent, VtCursorPosition>() {
+			/**
+			 * @param from
+			 */
+			@Override
+			public VtCursorPosition apply(final InputEvent from) {
+				return new VtCursorPosition(from);
+			}
+		}, VtCursorPosition.PATTERN);
+
+		/*
+		 * On a per-terminal basis.
+		 */
 		switch (this) {
 		case XTERM:
 			this.registerOldFunctionKeys(); // PuTTY sends old function keys by default
@@ -332,17 +401,50 @@ public enum TerminalType {
 	}
 
 	/**
-	 * @param event
+	 * @param vtResponseFactory
+	 * @param pattern
 	 */
-	public boolean isKnownEscapeSequence(final InputEvent event) {
-		return event.isEscapeSequence() && this.knownEscapeSequences.containsKey(event);
+	private void registerVtResponse(final Function<InputEvent, ? extends VtResponse> vtResponseFactory, final Pattern pattern) {
+		this.knownVtResponses.add(new ListEntry(pattern, vtResponseFactory));
 	}
 
 	/**
 	 * @param event
 	 */
-	public VtKey getVtKey(final InputEvent event) {
-		return this.knownEscapeSequences.get(event);
+	public boolean isKnownEscapeSequence(final InputEvent event) {
+		return event.isEscapeSequence() && (this.knownEscapeSequences.containsKey(event) || this.isKnownVtResponse(event));
+	}
+
+	/**
+	 * @param event
+	 */
+	private boolean isKnownVtResponse(final InputEvent event) {
+		for (final ListEntry entry : this.knownVtResponses) {
+			if (entry.getKey().matcher(event).matches()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param event
+	 */
+	public VtKeyOrResponse getVtKeyOrResponse(final InputEvent event) {
+		final VtKey vtKey = this.knownEscapeSequences.get(event);
+		return vtKey != null ? vtKey : this.getVtResponse(event);
+	}
+
+	/**
+	 * @param event
+	 */
+	private VtResponse getVtResponse(final InputEvent event) {
+		for (final ListEntry entry : this.knownVtResponses) {
+			if (entry.getKey().matcher(event).matches()) {
+				return entry.getFactory().apply(event);
+			}
+		}
+		return null;
 	}
 
 	/**
