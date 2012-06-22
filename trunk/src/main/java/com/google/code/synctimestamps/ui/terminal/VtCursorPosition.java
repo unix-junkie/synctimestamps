@@ -3,8 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +11,7 @@ import java.util.regex.Pattern;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class VtCursorPosition implements VtResponse {
+public final class VtCursorPosition extends VtResponse {
 	public static final Pattern PATTERN = Pattern.compile("\\e\\[(\\d+)\\;(\\d+)R");
 
 	private final int x;
@@ -46,30 +44,10 @@ public final class VtCursorPosition implements VtResponse {
 	}
 
 	/**
-	 * The return value of this method can be returned by
-	 * {@link InputEvent#toString()}.
-	 *
-	 * @see Object#toString()
-	 * @see InputEvent#toString()
+	 * @see VtResponse#appendDescription(StringBuilder)
 	 */
 	@Override
-	public String toString() {
-		final StringBuilder s = new StringBuilder();
-
-		s.append(ESC).append("[0;1;31m");
-		s.append('[');
-
-		/*
-		 * White on cyan.
-		 */
-		s.append(ESC).append("[1;37;45m");
-		s.append("Cursor position: +").append(this.x).append('+').append(this.y);
-
-		s.append(ESC).append("[0;1;31m");
-		s.append(']');
-
-		s.append(ESC).append("[0m");
-
-		return s.toString();
+	protected StringBuilder appendDescription(final StringBuilder s) {
+		return s.append("Cursor position: +").append(this.x).append('+').append(this.y);
 	}
 }
