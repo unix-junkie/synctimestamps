@@ -3,8 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +13,7 @@ import java.util.regex.Pattern;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class VtTerminalSize implements VtResponse {
+public final class VtTerminalSize extends VtResponse {
 	public static final Pattern PATTERN = Pattern.compile("\\e\\[8\\;(\\d+)\\;(\\d+)t");
 
 	private final int width;
@@ -48,30 +46,10 @@ public final class VtTerminalSize implements VtResponse {
 	}
 
 	/**
-	 * The return value of this method can be returned by
-	 * {@link InputEvent#toString()}.
-	 *
-	 * @see Object#toString()
-	 * @see InputEvent#toString()
+	 * @see VtResponse#appendDescription(StringBuilder)
 	 */
 	@Override
-	public String toString() {
-		final StringBuilder s = new StringBuilder();
-
-		s.append(ESC).append("[0;1;31m");
-		s.append('[');
-
-		/*
-		 * White on cyan.
-		 */
-		s.append(ESC).append("[1;37;45m");
-		s.append("Terminal size: ").append(this.width).append('x').append(this.height);
-
-		s.append(ESC).append("[0;1;31m");
-		s.append(']');
-
-		s.append(ESC).append("[0m");
-
-		return s.toString();
+	protected StringBuilder appendDescription(final StringBuilder s) {
+		return s.append("Terminal size: ").append(this.width).append('x').append(this.height);
 	}
 }
