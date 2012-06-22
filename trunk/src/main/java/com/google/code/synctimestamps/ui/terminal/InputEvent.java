@@ -6,11 +6,13 @@ package com.google.code.synctimestamps.ui.terminal;
 import java.util.Arrays;
 
 /**
+ * An unparsed sequence of chars from terminal response.
+ *
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class InputEvent {
+public final class InputEvent implements CharSequence {
 	public static final char ESC = '\u001B';
 
 	private final TerminalType terminalType;
@@ -37,6 +39,11 @@ public final class InputEvent {
 		 */
 		if (0 <= c && c <= 31) {
 			/*
+			 * White on green
+			 */
+			s.append(ESC).append("[1;37;42m");
+
+			/*
 			 * Those definitely are the control characters.
 			 */
 			s.append("^" + (char) ('@' + c));
@@ -55,6 +62,11 @@ public final class InputEvent {
 				break;
 			}
 		} else if (c == 127) {
+			/*
+			 * White on green
+			 */
+			s.append(ESC).append("[1;37;45m");
+
 			s.append((int) c).append("/Delete");
 		} else {
 			/*
@@ -67,7 +79,7 @@ public final class InputEvent {
 	}
 
 	private boolean isControlCharacter() {
-		return this.data.length == 1 && (0 <= this.data[0] && this.data[0] <= 31 || this.data[0] == 127);
+		return this.data.length == 1 && Terminal.isControlCharacter(this.data[0]);
 	}
 
 	/**
@@ -89,25 +101,28 @@ public final class InputEvent {
 	 */
 	@Override
 	public String toString() {
+		if (this.terminalType.isKnownEscapeSequence(this)) {
+			return this.terminalType.getVtKeyOrResponse(this).toString();
+		}
+
+		/*
+		 * Fallback implementation.
+		 */
 		final StringBuilder s = new StringBuilder();
 
-		s.append(ESC).append("[1;31m");
+		s.append(ESC).append("[0;1;31m");
 		s.append('[');
 		s.append(ESC).append("[0m");
 
-		if (this.terminalType.isKnownEscapeSequence(this)) {
-			s.append(this.terminalType.getVtKey(this));
-		} else {
-			for (final char c : this.data) {
-				s.append(toHumanReadable(c));
-				s.append(' ');
-			}
-			if (this.data.length > 0) {
-				s.deleteCharAt(s.length() - 1);
-			}
+		for (final char c : this.data) {
+			s.append(toHumanReadable(c));
+			s.append(' ');
+		}
+		if (this.data.length > 0) {
+			s.deleteCharAt(s.length() - 1);
 		}
 
-		s.append(ESC).append("[1;31m");
+		s.append(ESC).append("[0;1;31m");
 		s.append(']');
 		s.append(ESC).append("[0m");
 
@@ -129,5 +144,31 @@ public final class InputEvent {
 	@Override
 	public int hashCode() {
 		return Arrays.hashCode(this.data);
+	}
+
+	/**
+	 * @see CharSequence#length()
+	 */
+	@Override
+	public int length() {
+		return this.data.length;
+	}
+
+	/**
+	 * @see CharSequence#charAt(int)
+	 */
+	@Override
+	public char charAt(final int index) {
+		return this.data[index];
+	}
+
+	/**
+	 * @see CharSequence#subSequence(int, int)
+	 */
+	@Override
+	public CharSequence subSequence(final int start, final int end) {
+		return start == 0 && end == this.data.length
+				? this
+				: String.valueOf(this.data).substring(start, end);
 	}
 }

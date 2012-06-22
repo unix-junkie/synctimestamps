@@ -3,6 +3,7 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
@@ -86,6 +87,7 @@ public abstract class InputDemo {
 			final Terminal term = new Terminal(ttyName, getenv("TERM"));
 
 			term.println("Type ^Q or ^C to quit.");
+			term.println("Type ^L for text area size reporting.");
 			term.flush();
 
 			final char sequence[] = new char[MAX_SEQUENCE_LENGTH];
@@ -133,6 +135,9 @@ public abstract class InputDemo {
 
 									term.close();
 									System.exit(0);
+								} else if (event.isControlWith('L')) {
+									term.print(ESC + "[18t"); // "Correct" terminal size reporting
+									term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
 								}
 							}
 							term.println();
