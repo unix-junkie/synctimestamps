@@ -3,7 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
@@ -22,31 +21,6 @@ public abstract class InputDemo {
 		{"xterm", "-T", null, "-n", null, "-e", null},
 		{"/usr/X11/bin/xterm", "-T", null, "-n", null, "-e", null},
 	};
-
-	/**
-	 * <p>The threshold, in milliseconds, which, once exceeded,
-	 * means that a new input event has occurred.</p>
-	 *
-	 * <p>The maximum delay observed between the read operations
-	 * within a single escape sequence is 1 ms. The minimum delay
-	 * observed between two separate escape sequences is 89 ms.</p>
-	 *
-	 * <p>Additionally, even a value of <em>1</em> doesn't prevent
-	 * multiple keys pressed simultaneously
-	 * from being interpreted as a single sequence.</p>
-	 *
-	 * <p>So the value of 45 ms is a fair trade.</p>
-	 */
-	private static final long INPUT_EVENT_THRESHOLD = 45;
-
-	/**
-	 * Despite a regular escape sequence length rarely exceeds 7,
-	 * we should account for situations when multiple keys
-	 * are pressed simultaneously.
-	 */
-	private static final int MAX_SEQUENCE_LENGTH = 1024;
-
-	static int sequencePositionMarker;
 
 	private InputDemo() {
 		assert false;
@@ -84,94 +58,7 @@ public abstract class InputDemo {
 			 * TTY device specified.
 			 */
 			final String ttyName = args[0];
-			final Terminal term = new Terminal(ttyName, getenv("TERM"));
-
-			term.println("Type ^Q or ^C to quit.");
-			term.println("Type ^L for text area size reporting.");
-			term.flush();
-
-			final char sequence[] = new char[MAX_SEQUENCE_LENGTH];
-			final Object sequenceLock = new Object();
-
-			final Thread sequenceTokenizer = new Thread("SequenceTokenizer") {
-				/**
-				 * @see Thread#run()
-				 */
-				@Override
-				public void run() {
-					while (true) {
-						try {
-							/*
-							 * Clear the interrupted status and sleep.
-							 */
-							interrupted();
-							sleep(INPUT_EVENT_THRESHOLD);
-
-							/*
-							 * No new character has been read
-							 * within the timeout -- process the sequence.
-							 */
-							final char sequenceClone[];
-							synchronized (sequenceLock) {
-								/*
-								 * The sequence is empty.
-								 */
-								if (sequencePositionMarker == 0) {
-									continue;
-								}
-
-								sequenceClone = new char[sequencePositionMarker];
-								for (int j = 0; j < sequencePositionMarker; j++) {
-									sequenceClone[j] = sequence[j];
-								}
-								sequencePositionMarker = 0;
-							}
-
-							for (final InputEvent event : term.split(sequenceClone)) {
-								term.print(event);
-								if (event.isControlWith('Q') || event.isControlWith('C')) {
-									term.println();
-									term.flush();
-
-									term.close();
-									System.exit(0);
-								} else if (event.isControlWith('L')) {
-									term.print(ESC + "[18t"); // "Correct" terminal size reporting
-									term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
-								}
-							}
-							term.println();
-							term.flush();
-						} catch (final InterruptedException ie) {
-							/*
-							 * New character has been read --
-							 * continuing from the beginning.
-							 */
-							continue;
-						}
-					}
-				}
-			};
-			sequenceTokenizer.start();
-
-			int i;
-			while (/* term.isOpen() && */ (i = term.read()) != -1) {
-				/*
-				 * 1. Interrupt the tokenizer,
-				 * so that a new cycle is started.
-				 */
-				sequenceTokenizer.interrupt();
-
-				/*
-				 * 2. Append the character to the sequence.
-				 */
-				final char c = (char) i;
-				synchronized (sequenceLock) {
-					if (sequencePositionMarker < sequence.length) {
-						sequence[sequencePositionMarker++] = c;
-					}
-				}
-			}
+			new Terminal(ttyName, getenv("TERM"));
 		} else {
 			final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" " + InputDemo.class.getName();
 

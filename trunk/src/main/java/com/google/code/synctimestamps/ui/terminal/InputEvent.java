@@ -15,6 +15,9 @@ import java.util.Arrays;
 public final class InputEvent implements CharSequence {
 	public static final char ESC = '\u001B';
 
+	/**
+	 * Required for correct {@link #toString()} operation.
+	 */
 	private final TerminalType terminalType;
 
 	private final char data[];

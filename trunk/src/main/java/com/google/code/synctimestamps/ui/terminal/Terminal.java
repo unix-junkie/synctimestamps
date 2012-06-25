@@ -3,6 +3,7 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static java.lang.System.arraycopy;
 import static java.util.Collections.emptyList;
 
@@ -33,6 +34,39 @@ public final class Terminal extends PrintWriter {
 		super(ttyName);
 		this.type = TerminalType.safeValueOf(term);
 		this.in = new FileReader(ttyName);
+
+		final InputEventHandler handler = new InputEventHandler() {
+			{
+				Terminal.this.println("Type ^Q or ^C to quit.");
+				Terminal.this.println("Type ^L for text area size reporting.");
+				Terminal.this.flush();
+			}
+
+			/**
+			 * @see InputEventHandler#handle(List)
+			 */
+			@Override
+			public void handle(final List<InputEvent> events) {
+				for (final InputEvent event : events) {
+					Terminal.this.print(event);
+					if (event.isControlWith('Q') || event.isControlWith('C')) {
+						Terminal.this.println();
+						Terminal.this.flush();
+
+						Terminal.this.close();
+						System.exit(0);
+					} else if (event.isControlWith('L')) {
+						Terminal.this.print(ESC + "[18t"); // "Correct" terminal size reporting
+						Terminal.this.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
+					}
+				}
+				Terminal.this.println();
+				Terminal.this.flush();
+			}
+		};
+
+		final Thread sequenceTokenizer = new SequenceTokenizer(this, handler);
+		sequenceTokenizer.start();
 	}
 
 	/**
