@@ -81,8 +81,16 @@ public final class InputEvent implements CharSequence {
 		return s;
 	}
 
+
+	/**
+	 * @param c
+	 */
+	public static boolean isControlCharacter(final char c) {
+		return 0 <= c && c <= 31 || c == 127;
+	}
+
 	private boolean isControlCharacter() {
-		return this.data.length == 1 && Terminal.isControlCharacter(this.data[0]);
+		return this.data.length == 1 && isControlCharacter(this.data[0]);
 	}
 
 	/**
