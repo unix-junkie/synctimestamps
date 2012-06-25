@@ -12,7 +12,13 @@ import java.util.List;
  */
 public interface InputEventHandler {
 	/**
+	 * @param term
 	 * @param events
 	 */
-	void handle(final List<InputEvent> events);
+	void handle(final Terminal term, final List<InputEvent> events);
+
+	/**
+	 * @param term
+	 */
+	void printUsage(final Terminal term);
 }

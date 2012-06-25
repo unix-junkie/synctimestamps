@@ -11,6 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
+import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
+import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
+
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
@@ -58,7 +62,8 @@ public abstract class InputDemo {
 			 * TTY device specified.
 			 */
 			final String ttyName = args[0];
-			new Terminal(ttyName, getenv("TERM"));
+			final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler(new TerminalSizeHandler(new Echo())));
+			term.start();
 		} else {
 			final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" " + InputDemo.class.getName();
 
