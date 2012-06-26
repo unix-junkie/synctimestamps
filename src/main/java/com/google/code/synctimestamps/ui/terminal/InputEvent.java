@@ -13,7 +13,15 @@ import java.util.Arrays;
  * @version $Revision$, $Date$
  */
 public final class InputEvent implements CharSequence {
-	public static final char ESC = '\u001B';
+	public static final char BACKSPACE = '\b';
+
+	public static final char TAB = '\t';
+
+	public static final char ENTER = '\r';
+
+	public static final char ESC = '\u001B';		//  27
+
+	public static final char DELETE = '\u007F';	// 127
 
 	/**
 	 * Required for correct {@link #toString()} operation.
@@ -51,24 +59,24 @@ public final class InputEvent implements CharSequence {
 			 */
 			s.append("^" + (char) ('@' + c));
 			switch (c) {
-			case 8:
+			case BACKSPACE:
 				s.append("/BackSpace");
 				break;
-			case 9:
+			case TAB:
 				s.append("/Tab");
 				break;
-			case 13:
+			case ENTER:
 				s.append("/Enter");
 				break;
-			case 27:
+			case ESC:
 				s.append("/Escape");
 				break;
 			}
-		} else if (c == 127) {
+		} else if (c == DELETE) {
 			/*
 			 * White on green
 			 */
-			s.append(ESC).append("[1;37;45m");
+			s.append(ESC).append("[1;37;42m");
 
 			s.append((int) c).append("/Delete");
 		} else {
