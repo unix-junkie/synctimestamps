@@ -160,14 +160,13 @@ public final class SequenceTokenizer extends Thread {
 
 	/**
 	 * Splits the sequence of chars read into individual input events.
-	 * This methodss allows individual keys to be identified whenever
+	 * This method allows individual keys to be identified whenever
 	 * multiple keys are pressed simultaneously.
 	 *
 	 * @param sequence
 	 * @param type
-	 * @todo split on all control characters, not only escape (see {@link #firstIndexOfControlChar(char[], int)}). Still, it is only Escape who can start a sequence.
 	 */
-	private static List<InputEvent> split(final char sequence[], final TerminalType type) {
+	static List<InputEvent> split(final char sequence[], final TerminalType type) {
 		if (sequence.length == 0) {
 			return emptyList();
 		}
@@ -177,26 +176,47 @@ public final class SequenceTokenizer extends Thread {
 		final int firstIndexOfEsc = firstIndexOf(sequence, InputEvent.ESC);
 		switch (firstIndexOfEsc) {
 		case -1:
+			/*
+			 * The char sequence doesn't contain any escape sequences.
+			 */
 			for (final char c : sequence) {
 				events.add(new InputEvent(type, c));
 			}
 			break;
 		case 0:
-			final int secondIndexOfEsc = firstIndexOf(sequence, InputEvent.ESC, firstIndexOfEsc + 1);
-			if (secondIndexOfEsc == -1) {
+			/*
+			 * The char sequence starts with an escape sequence.
+			 */
+			final int secondIndexOfCtrl = firstIndexOfControlChar(sequence, firstIndexOfEsc + 1);
+			if (secondIndexOfCtrl == -1) {
 				events.add(new InputEvent(type, sequence));
 			} else {
-				final char head[] = new char[secondIndexOfEsc];
-				final char tail[] = new char[sequence.length - secondIndexOfEsc];
+				/*
+				 * The first escape sequence (up to the next control character, exclusive).
+				 */
+				final char head[] = new char[secondIndexOfCtrl];
+				/*
+				 * The rest of the sequence, starting with a control character
+				 */
+				final char tail[] = new char[sequence.length - secondIndexOfCtrl];
 
 				arraycopy(sequence, 0, head, 0, head.length);
-				arraycopy(sequence, secondIndexOfEsc, tail, 0, tail.length);
+				arraycopy(sequence, secondIndexOfCtrl, tail, 0, tail.length);
 				events.add(new InputEvent(type, head));
 				events.addAll(split(tail, type));
 			}
 			break;
 		default:
+			/*
+			 * The char sequence starts with a normal or control character (excluding escape),
+			 * and contains one or more escape sequence(s) starting at any index (excluding 0).
+			 *
+			 * The head doesn't contain any escape sequences.
+			 */
 			final char head[] = new char[firstIndexOfEsc];
+			/*
+			 * The tail starts with an escape sequence.
+			 */
 			final char tail[] = new char[sequence.length - firstIndexOfEsc];
 
 			arraycopy(sequence, 0, head, 0, head.length);
