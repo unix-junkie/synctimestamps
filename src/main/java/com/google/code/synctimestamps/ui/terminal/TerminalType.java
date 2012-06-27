@@ -56,8 +56,10 @@ public enum TerminalType {
 	SCREEN_LINUX("screen.linux"),
 	SUN_CMD("sun-cmd"),
 	SUN_COLOR("sun-color"),
+	VT52("vt52"),
 	VT100("vt100"),
 	VT320("vt320"),
+	VTNT("vtnt"),
 	XTERM("xterm"),
 	;
 
@@ -220,6 +222,11 @@ public enum TerminalType {
 
 			this.registerCursorKeys();
 			break;
+		case VTNT:
+			/**
+			 * @todo Implement.
+			 */
+			break;
 		case VT320:
 			this.registerAnsiFunctionKeys();
 
@@ -229,6 +236,11 @@ public enum TerminalType {
 			this.registerVt100FunctionKeys();
 
 			this.registerCursorKeys();
+			break;
+		case VT52:
+			/**
+			 * @todo Implement.
+			 */
 			break;
 		case SCOANSI:
 			this.registerScoFunctionKeys();
