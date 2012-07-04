@@ -42,11 +42,9 @@ public final class TerminalSizeHandler implements InputEventHandler {
 			if (event.isControlWith('L')) {
 				if (this.nextIsFiltering) {
 					final FilteringTerminalSizeHandler handler = (FilteringTerminalSizeHandler) this.next;
-					handler.setExpectingTerminalSize(true);
+					handler.setExpectingTerminalSize(true, term);
 				}
 				term.print(ESC + "[18t"); // "Correct" terminal size reporting
-				term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
-				term.println();
 				term.flush();
 			}
 		}
