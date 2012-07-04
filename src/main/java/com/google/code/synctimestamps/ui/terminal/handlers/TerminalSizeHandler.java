@@ -19,11 +19,14 @@ import com.google.code.synctimestamps.ui.terminal.Terminal;
 public final class TerminalSizeHandler implements InputEventHandler {
 	private final InputEventHandler next;
 
+	private final boolean nextIsFiltering;
+
 	/**
 	 * @param next
 	 */
 	public TerminalSizeHandler(final InputEventHandler next) {
 		this.next = next;
+		this.nextIsFiltering = next instanceof FilteringTerminalSizeHandler;
 	}
 
 	/**
@@ -37,6 +40,10 @@ public final class TerminalSizeHandler implements InputEventHandler {
 
 		for (final InputEvent event : events) {
 			if (event.isControlWith('L')) {
+				if (this.nextIsFiltering) {
+					final FilteringTerminalSizeHandler handler = (FilteringTerminalSizeHandler) this.next;
+					handler.setExpectingTerminalSize(true);
+				}
 				term.print(ESC + "[18t"); // "Correct" terminal size reporting
 				term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
 				term.println();

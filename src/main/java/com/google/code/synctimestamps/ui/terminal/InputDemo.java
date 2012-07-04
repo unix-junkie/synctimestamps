@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
+import com.google.code.synctimestamps.ui.terminal.handlers.FilteringTerminalSizeHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
 
 /**
@@ -72,7 +73,7 @@ public abstract class InputDemo {
 				 * TTY device specified.
 				 */
 				final String ttyName = args[0];
-				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler(new TerminalSizeHandler(new Echo())));
+				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler(new TerminalSizeHandler(new FilteringTerminalSizeHandler(new Echo()))));
 				term.start();
 			} else {
 				final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" " + InputDemo.class.getName();
