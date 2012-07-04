@@ -61,6 +61,7 @@ public enum TerminalType {
 	VT320("vt320"),
 	VTNT("vtnt"),
 	XTERM("xterm"),
+	CYGWIN("cygwin"),
 	;
 
 	static {
@@ -174,6 +175,7 @@ public enum TerminalType {
 			this.registerApplicationCursorKeys(); // XTerm and PuTTY can also send application cursor keys
 			break;
 		case LINUX:
+		case CYGWIN:
 			this.registerLinuxFunctionKeys();
 			//$FALL-THROUGH$
 		case ANSI:
