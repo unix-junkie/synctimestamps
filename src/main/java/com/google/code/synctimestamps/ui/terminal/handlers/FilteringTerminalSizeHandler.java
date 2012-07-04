@@ -21,7 +21,11 @@ import com.google.code.synctimestamps.ui.terminal.VtTerminalSize;
  * @version $Revision$, $Date$
  */
 public final class FilteringTerminalSizeHandler implements InputEventHandler {
-	private static long DEFAULT_EXPECTING_TIMEOUT_MILLIS = 100;
+	/**
+	 * Terminal emulator on the same host: ~50 ms.<br>
+	 * Local area connection: ~220 ms.
+	 */
+	private static long DEFAULT_EXPECTING_TIMEOUT_MILLIS = 250;
 
 	private final InputEventHandler next;
 
