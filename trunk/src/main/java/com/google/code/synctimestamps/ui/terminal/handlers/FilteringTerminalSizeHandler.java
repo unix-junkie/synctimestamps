@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,9 +21,11 @@ import com.google.code.synctimestamps.ui.terminal.VtTerminalSize;
  * @version $Revision$, $Date$
  */
 public final class FilteringTerminalSizeHandler implements InputEventHandler {
+	private static long DEFAULT_EXPECTING_TIMEOUT_MILLIS = 100;
+
 	private final InputEventHandler next;
 
-	private final Object expectingTerminalSizeLock = new Object();
+	final Object expectingTerminalSizeLock = new Object();
 
 	/**
 	 * The moment (in milliseconds) when {@link
@@ -32,11 +36,19 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 	 */
 	private long t0;
 
+	final long expectingTimeoutMillis;
+
 	/**
 	 * @param next
+	 * @param expectingTimeoutMillis
 	 */
-	public FilteringTerminalSizeHandler(final InputEventHandler next) {
+	public FilteringTerminalSizeHandler(final InputEventHandler next, final long expectingTimeoutMillis) {
 		this.next = next;
+		this.expectingTimeoutMillis = expectingTimeoutMillis;
+	}
+
+	public FilteringTerminalSizeHandler(final InputEventHandler next) {
+		this(next, DEFAULT_EXPECTING_TIMEOUT_MILLIS);
 	}
 
 	/**
@@ -64,7 +76,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 							 /*
 							  * Reset the "expectingTerminalSize" status.
 							  */
-							 this.setExpectingTerminalSize(false);
+							 this.setExpectingTerminalSize(false, term);
 
 							 /*
 							  * We're expecting only a single terminal size event.
@@ -93,9 +105,53 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 
 	/**
 	 * @param expectingTerminalSize
+	 * @param term
+	 * @throws IllegalStateException
 	 */
-	public void setExpectingTerminalSize(final boolean expectingTerminalSize) {
+	public void setExpectingTerminalSize(final boolean expectingTerminalSize, final Terminal term) {
 		synchronized (this.expectingTerminalSizeLock) {
+			if (expectingTerminalSize) {
+				if (this.isExpectingTerminalSize()) {
+					/*
+					 * Don't start a new background task
+					 * if there's one already running.
+					 */
+					throw new IllegalStateException();
+				}
+
+				/**
+				 * @todo Rewrite using ScheduledThreadPoolExecutor with a single background thread.
+				 */
+				new Thread() {
+					/**
+					 * @see Thread#run()
+					 */
+					@Override
+					public void run() {
+						try {
+							sleep(FilteringTerminalSizeHandler.this.expectingTimeoutMillis);
+						} catch (final InterruptedException ie) {
+							// ignore
+						}
+
+						synchronized (FilteringTerminalSizeHandler.this.expectingTerminalSizeLock) {
+							if (FilteringTerminalSizeHandler.this.isExpectingTerminalSize()) {
+								FilteringTerminalSizeHandler.this.setExpectingTerminalSize(false, term);
+
+								/*
+								 * This background task can easily expire
+								 * if multiple events are being collected.
+								 */
+								term.println("Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
+								term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
+								term.println(); // Temporary, only as long as we don't return the cursor to its original position
+								term.flush();
+							}
+						}
+					}
+				}.start();
+			}
+
 			this.t0 = expectingTerminalSize ? System.currentTimeMillis() : 0L;
 		}
 	}
