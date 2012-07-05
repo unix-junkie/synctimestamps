@@ -108,20 +108,20 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 	/**
 	 * @param expectingTerminalSize
 	 * @param term
-	 * @throws IllegalStateException
 	 */
 	public void setExpectingTerminalSize(final boolean expectingTerminalSize, final Terminal term) {
 		synchronized (this.expectingTerminalSizeLock) {
 			if (expectingTerminalSize) {
-				if (this.isExpectingTerminalSize()) {
-					/**
-					 * @todo This causes problems sometimes, so better wait on expectingTerminalSizeLock
-					 */
+				while (this.isExpectingTerminalSize()) {
 					/*
 					 * Don't start a new background task
 					 * if there's one already running.
 					 */
-					throw new IllegalStateException();
+					try {
+						this.expectingTerminalSizeLock.wait();
+					} catch (final InterruptedException ie) {
+						// ignore
+					}
 				}
 
 				/**
@@ -155,6 +155,8 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 						}
 					}
 				}.start();
+			} else {
+				this.expectingTerminalSizeLock.notifyAll();
 			}
 
 			this.t0 = expectingTerminalSize ? System.currentTimeMillis() : 0L;
