@@ -3,8 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -116,6 +114,9 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 		synchronized (this.expectingTerminalSizeLock) {
 			if (expectingTerminalSize) {
 				if (this.isExpectingTerminalSize()) {
+					/**
+					 * @todo This causes problems sometimes, so better wait on expectingTerminalSizeLock
+					 */
 					/*
 					 * Don't start a new background task
 					 * if there's one already running.
@@ -147,7 +148,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 								 * if multiple events are being collected.
 								 */
 								term.println("Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
-								term.print(ESC + "[999;999H" + ESC + "[6n"); // Workaround for buggy terminals
+								term.setCursorLocation(999, 999).requestCursorLocation(); // Workaround for buggy terminals
 								term.println(); // Temporary, only as long as we don't return the cursor to its original position
 								term.flush();
 							}
