@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -69,5 +71,28 @@ public final class Terminal extends PrintWriter {
 
 	public TerminalType getType() {
 		return this.type;
+	}
+
+	private Terminal printEsc() {
+		this.print(ESC);
+		return this;
+	}
+
+	public Terminal requestCursorLocation() {
+		this.printEsc().print("[6n");
+		return this;
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 */
+	public Terminal setCursorLocation(final int x, final int y) {
+		this.printEsc().print('[');
+		this.print(y);
+		this.print(';');
+		this.print(x);
+		this.print('H');
+		return this;
 	}
 }
