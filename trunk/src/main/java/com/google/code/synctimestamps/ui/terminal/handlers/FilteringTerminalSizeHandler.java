@@ -3,8 +3,12 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
@@ -39,6 +43,8 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 	private long t0;
 
 	final long expectingTimeoutMillis;
+
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	/**
 	 * @param next
@@ -124,21 +130,12 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 					}
 				}
 
-				/**
-				 * @todo Rewrite using ScheduledThreadPoolExecutor with a single background thread.
-				 */
-				new Thread() {
+				this.executor.schedule(new Runnable() {
 					/**
-					 * @see Thread#run()
+					 * @see Runnable#run()
 					 */
 					@Override
 					public void run() {
-						try {
-							sleep(FilteringTerminalSizeHandler.this.expectingTimeoutMillis);
-						} catch (final InterruptedException ie) {
-							// ignore
-						}
-
 						synchronized (FilteringTerminalSizeHandler.this.expectingTerminalSizeLock) {
 							if (FilteringTerminalSizeHandler.this.isExpectingTerminalSize()) {
 								FilteringTerminalSizeHandler.this.setExpectingTerminalSize(false, term);
@@ -154,7 +151,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 							}
 						}
 					}
-				}.start();
+				}, this.expectingTimeoutMillis, MILLISECONDS);
 			} else {
 				this.expectingTerminalSizeLock.notifyAll();
 			}
