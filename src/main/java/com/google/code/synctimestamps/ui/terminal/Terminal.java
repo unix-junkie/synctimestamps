@@ -78,6 +78,11 @@ public final class Terminal extends PrintWriter {
 		return this;
 	}
 
+	public Terminal requestTerminalSize() {
+		this.printEsc().print("[18t");
+		return this;
+	}
+
 	public Terminal requestCursorLocation() {
 		this.printEsc().print("[6n");
 		return this;

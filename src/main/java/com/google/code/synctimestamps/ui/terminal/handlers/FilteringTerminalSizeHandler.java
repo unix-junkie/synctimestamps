@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
+import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
 import com.google.code.synctimestamps.ui.terminal.TerminalType;
 import com.google.code.synctimestamps.ui.terminal.VtKeyOrResponse;
 import com.google.code.synctimestamps.ui.terminal.VtTerminalSize;
@@ -22,7 +24,7 @@ import com.google.code.synctimestamps.ui.terminal.VtTerminalSize;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class FilteringTerminalSizeHandler implements InputEventHandler {
+public final class FilteringTerminalSizeHandler implements InputEventHandler, TerminalSizeProvider {
 	/**
 	 * Terminal emulator on the same host: ~50 ms.<br>
 	 * Local area connection: ~220 ms.
@@ -112,10 +114,21 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 	}
 
 	/**
+	 * @see TerminalSizeProvider#getTerminalSize(Terminal)
+	 */
+	@Override
+	public Dimension getTerminalSize(final Terminal term) {
+		this.setExpectingTerminalSize(true, term);
+		term.requestTerminalSize();
+		term.flush();
+		return null;
+	}
+
+	/**
 	 * @param expectingTerminalSize
 	 * @param term
 	 */
-	public void setExpectingTerminalSize(final boolean expectingTerminalSize, final Terminal term) {
+	void setExpectingTerminalSize(final boolean expectingTerminalSize, final Terminal term) {
 		synchronized (this.expectingTerminalSizeLock) {
 			if (expectingTerminalSize) {
 				while (this.isExpectingTerminalSize()) {
@@ -160,7 +173,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler {
 		}
 	}
 
-	public boolean isExpectingTerminalSize() {
+	boolean isExpectingTerminalSize() {
 		synchronized (this.expectingTerminalSizeLock) {
 			return this.t0 != 0L;
 		}

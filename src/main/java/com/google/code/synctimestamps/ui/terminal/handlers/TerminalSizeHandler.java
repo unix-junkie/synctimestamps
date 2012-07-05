@@ -3,13 +3,13 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
-
 import java.util.List;
 
+import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
+import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -26,7 +26,7 @@ public final class TerminalSizeHandler implements InputEventHandler {
 	 */
 	public TerminalSizeHandler(final InputEventHandler next) {
 		this.next = next;
-		this.nextIsFiltering = next instanceof FilteringTerminalSizeHandler;
+		this.nextIsFiltering = next instanceof TerminalSizeProvider;
 	}
 
 	/**
@@ -41,11 +41,15 @@ public final class TerminalSizeHandler implements InputEventHandler {
 		for (final InputEvent event : events) {
 			if (event.isControlWith('L')) {
 				if (this.nextIsFiltering) {
-					final FilteringTerminalSizeHandler handler = (FilteringTerminalSizeHandler) this.next;
-					handler.setExpectingTerminalSize(true, term);
+					final TerminalSizeProvider handler = (TerminalSizeProvider) this.next;
+					final Dimension terminalSize = handler.getTerminalSize(term);
+					term.println("Terminal size of " + terminalSize + " reported.");
+				} else {
+					term.requestTerminalSize();
+					term.setCursorLocation(999, 999).requestCursorLocation();
+					term.println();
+					term.flush();
 				}
-				term.print(ESC + "[18t"); // "Correct" terminal size reporting
-				term.flush();
 			}
 		}
 	}
