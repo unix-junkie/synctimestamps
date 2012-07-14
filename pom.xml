@@ -9,7 +9,14 @@
 	
 	<properties>
 		<project.build.shellSourceDirectory>${basedir}/src/main/shell</project.build.shellSourceDirectory>
+		<!-- TODO: is there a standard name for this? -->
+		<project.build.resourceDirectory>${basedir}/src/main/resources</project.build.resourceDirectory>
+		<metadata.extractor.version>2.4.0-beta-1</metadata.extractor.version>
+		<sanselan.version>0.97-incubator</sanselan.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
+		<google.collections.version>1.0</google.collections.version>
+		<log4j.version>1.2.16</log4j.version>
+		<slf4j.version>1.6.1</slf4j.version>
 	</properties>
 
 	<build>
@@ -72,14 +79,14 @@
 		<dependency>
 			<groupId>com.drewnoakes</groupId>
 			<artifactId>metadata-extractor</artifactId>
-			<version>2.4.0-beta-1</version>
+			<version>${metadata.extractor.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.sanselan</groupId>
 			<artifactId>sanselan</artifactId>
-			<version>0.97-incubator</version>
+			<version>${sanselan.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -96,24 +103,24 @@
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
-			<version>1.0</version>
+			<version>${google.collections.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
+			<version>${log4j.version}</version>
 			<type>jar</type>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
+			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
+			<version>${slf4j.version}</version>
 			<type>jar</type>
 			<scope>runtime</scope>
 		</dependency>
