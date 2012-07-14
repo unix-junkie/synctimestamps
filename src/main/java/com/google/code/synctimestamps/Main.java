@@ -33,8 +33,15 @@ abstract class Main {
 	private static List<File> listFilesRecursively(final File root, final Predicate<File> predicate) {
 		final List<File> files = new ArrayList<File>();
 		if (root.isDirectory()) {
-			for (final File child : root.listFiles()) {
-				files.addAll(listFilesRecursively(child, predicate));
+			final File children[] = root.listFiles();
+			/*
+			 * For some reason, File.listFiles() may return null
+			 * instead of a zero-length array.
+			 */
+			if (children != null) {
+				for (final File child : root.listFiles()) {
+					files.addAll(listFilesRecursively(child, predicate));
+				}
 			}
 		} else if (predicate.apply(root)) {
 			files.add(root);
