@@ -21,6 +21,15 @@
 			</includes>
 		</fileSet>
 		<fileSet>
+			<directory>${project.build.resourceDirectory}/conf</directory>
+			<outputDirectory>etc/${project.artifactId}/conf</outputDirectory>
+			<fileMode>0644</fileMode>
+			<filtered>false</filtered>
+			<includes>
+				<include>appContext.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet>
 			<directory>${project.build.directory}</directory>
 			<outputDirectory>share/java</outputDirectory>
 			<fileMode>0644</fileMode>
