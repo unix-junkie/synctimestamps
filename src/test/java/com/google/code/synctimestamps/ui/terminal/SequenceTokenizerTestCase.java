@@ -8,6 +8,7 @@ import static com.google.code.synctimestamps.ui.terminal.InputEvent.DELETE;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ENTER;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.TAB;
+import static com.google.code.synctimestamps.ui.terminal.SequenceConsumer.split;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public final class SequenceTokenizerTestCase extends TestCase {
 		s.append("abcd");
 		final char sequence[] = new char[s.length()];
 		s.getChars(0, s.length(), sequence, 0);
-		assertEquals(4, SequenceTokenizer.split(sequence, TerminalType.ANSI).size());
+		assertEquals(4, split(sequence, TerminalType.ANSI).size());
 	}
 
 	@Test
@@ -36,7 +37,7 @@ public final class SequenceTokenizerTestCase extends TestCase {
 		s.append("abcd").append(ESC).append("OP");
 		final char sequence[] = new char[s.length()];
 		s.getChars(0, s.length(), sequence, 0);
-		final List<InputEvent> events = SequenceTokenizer.split(sequence, TerminalType.ANSI);
+		final List<InputEvent> events = split(sequence, TerminalType.ANSI);
 		final int eventCount = events.size();
 		assertEquals(5, eventCount);
 
@@ -50,7 +51,7 @@ public final class SequenceTokenizerTestCase extends TestCase {
 		s.append("abcd").append(ESC).append("OP").append(ESC).append("OQ");
 		final char sequence[] = new char[s.length()];
 		s.getChars(0, s.length(), sequence, 0);
-		final List<InputEvent> events = SequenceTokenizer.split(sequence, TerminalType.ANSI);
+		final List<InputEvent> events = split(sequence, TerminalType.ANSI);
 		final int eventCount = events.size();
 		assertEquals(6, eventCount);
 
@@ -64,7 +65,7 @@ public final class SequenceTokenizerTestCase extends TestCase {
 		s.append("abcd").append(BACKSPACE).append(TAB).append(ENTER).append(DELETE);
 		final char sequence[] = new char[s.length()];
 		s.getChars(0, s.length(), sequence, 0);
-		final List<InputEvent> events = SequenceTokenizer.split(sequence, TerminalType.ANSI);
+		final List<InputEvent> events = split(sequence, TerminalType.ANSI);
 		final int eventCount = events.size();
 		assertEquals(8, eventCount);
 	}
@@ -78,7 +79,7 @@ public final class SequenceTokenizerTestCase extends TestCase {
 				.append(BACKSPACE).append(TAB).append(ENTER).append(DELETE).append("abcd");
 		final char sequence[] = new char[s.length()];
 		s.getChars(0, s.length(), sequence, 0);
-		final List<InputEvent> events = SequenceTokenizer.split(sequence, TerminalType.ANSI);
+		final List<InputEvent> events = split(sequence, TerminalType.ANSI);
 		final int eventCount = events.size();
 		assertEquals(22, eventCount);
 	}

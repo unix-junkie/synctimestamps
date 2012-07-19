@@ -3,6 +3,7 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.Dimension.UNDEFINED;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
+import com.google.code.synctimestamps.ui.terminal.SequenceConsumer;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
 import com.google.code.synctimestamps.ui.terminal.TerminalType;
@@ -48,6 +50,10 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
+	Dimension terminalSize;
+
+	final Object terminalSizeLock = new Object();
+
 	/**
 	 * @param next
 	 * @param expectingTimeoutMillis
@@ -73,26 +79,30 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 					final InputEvent event = it.next();
 					final TerminalType type = term.getType();
 					if (type.isKnownEscapeSequence(event)) {
-						 final VtKeyOrResponse vtKeyOrResponse = type.getVtKeyOrResponse(event);
-						 if (vtKeyOrResponse instanceof VtTerminalSize) {
-							 final VtTerminalSize terminalSize = (VtTerminalSize) vtKeyOrResponse;
-							 it.remove();
+						final VtKeyOrResponse vtKeyOrResponse = type.getVtKeyOrResponse(event);
+						if (vtKeyOrResponse instanceof VtTerminalSize) {
+							final VtTerminalSize terminalSize0 = (VtTerminalSize) vtKeyOrResponse;
+							it.remove();
 
-							 final int width = terminalSize.getWidth();
-							 final int height = terminalSize.getHeight();
-							 final long t1 = System.currentTimeMillis();
-							 term.println("Terminal size of " + width + 'x' + height + " reported " + (t1 - this.t0) + " ms after the request.");
+							final int width = terminalSize0.getWidth();
+							final int height = terminalSize0.getHeight();
+							final long t1 = System.currentTimeMillis();
+							term.println("Terminal size of " + width + 'x' + height + " reported " + (t1 - this.t0) + " ms after the request.");
+							synchronized (this.terminalSizeLock) {
+								this.terminalSize = new Dimension(terminalSize0);
+								this.terminalSizeLock.notifyAll();
+							}
 
-							 /*
-							  * Reset the "expectingTerminalSize" status.
-							  */
-							 this.setExpectingTerminalSize(false, term);
+							/*
+							 * Reset the "expectingTerminalSize" status.
+							 */
+							this.setExpectingTerminalSize(false, term);
 
-							 /*
-							  * We're expecting only a single terminal size event.
-							  */
-							 break;
-						 }
+							/*
+							 * We're expecting only a single terminal size event.
+							 */
+							break;
+						}
 					}
 				}
 			}
@@ -118,10 +128,34 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 	 */
 	@Override
 	public Dimension getTerminalSize(final Terminal term) {
-		this.setExpectingTerminalSize(true, term);
-		term.requestTerminalSize();
-		term.flush();
-		return null;
+		if (SequenceConsumer.isDispatchThread()) {
+			throw new IllegalStateException();
+		}
+
+		synchronized (this.terminalSizeLock) {
+			/*
+			 * Re-set the previously stored value.
+			 */
+			this.terminalSize = null;
+
+			this.setExpectingTerminalSize(true, term);
+
+			term.requestTerminalSize();
+			term.flush();
+
+			while (this.terminalSize == null) {
+				try {
+					this.terminalSizeLock.wait();
+				} catch (final InterruptedException ie) {
+					/*
+					 * Never.
+					 */
+					break;
+				}
+			}
+
+			return this.terminalSize;
+		}
 	}
 
 	/**
@@ -158,6 +192,11 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 								 * if multiple events are being collected.
 								 */
 								term.println("Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
+								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
+									FilteringTerminalSizeHandler.this.terminalSize = UNDEFINED;
+									FilteringTerminalSizeHandler.this.terminalSizeLock.notifyAll();
+								}
+
 								term.setCursorLocation(999, 999).requestCursorLocation(); // Workaround for buggy terminals
 								term.println(); // Temporary, only as long as we don't return the cursor to its original position
 								term.flush();
