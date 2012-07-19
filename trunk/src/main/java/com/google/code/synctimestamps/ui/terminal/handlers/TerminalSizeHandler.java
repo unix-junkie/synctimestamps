@@ -4,6 +4,8 @@
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
@@ -20,6 +22,8 @@ public final class TerminalSizeHandler implements InputEventHandler {
 	private final InputEventHandler next;
 
 	private final boolean nextIsFiltering;
+
+	private final ExecutorService background = Executors.newSingleThreadExecutor();
 
 	/**
 	 * @param next
@@ -42,8 +46,18 @@ public final class TerminalSizeHandler implements InputEventHandler {
 			if (event.isControlWith('L')) {
 				if (this.nextIsFiltering) {
 					final TerminalSizeProvider handler = (TerminalSizeProvider) this.next;
-					final Dimension terminalSize = handler.getTerminalSize(term);
-					term.println("Terminal size of " + terminalSize + " reported.");
+					this.background.submit(new Runnable() {
+						/**
+						 * @see Runnable#run()
+						 */
+						@Override
+						public void run() {
+							final Dimension terminalSize = handler.getTerminalSize(term);
+							term.println("Terminal size of " + terminalSize + " reported.");
+							term.flush();
+						}
+						
+					});
 				} else {
 					term.requestTerminalSize();
 					term.setCursorLocation(999, 999).requestCursorLocation();

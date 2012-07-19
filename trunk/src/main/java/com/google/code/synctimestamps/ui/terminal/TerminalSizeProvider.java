@@ -11,6 +11,8 @@ package com.google.code.synctimestamps.ui.terminal;
 public interface TerminalSizeProvider {
 	/**
 	 * @param term
+	 * @throws IllegalStateException if called from the event dispatch
+	 *         thread {@link SequenceConsumer#isDispatchThread()}
 	 */
 	Dimension getTerminalSize(final Terminal term);
 }
