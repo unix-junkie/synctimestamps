@@ -3,6 +3,11 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
+import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
@@ -54,6 +59,55 @@ public abstract class InputDemo {
 	}
 
 	/**
+	 * <p>
+	 * In order to see line-drawing characters when logging in to a UNIX
+	 * from Windows using Microsoft Telnet, one need to issue
+	 * <pre>
+	 * $ <b>export LANG=ru_RU.CP866</b>
+	 * $ <b>export LC_ALL=${LANG}</b>
+	 * </pre>
+	 * </p>
+	 *
+	 * <p>Solaris console (<tt>sun-color</tt>) doesn't support
+	 * VT100 alternate character set, but has 11 single-line
+	 * characters with codes 90..9A. The rest of the characters
+	 * are distributed according to ISO8859-1</p>
+	 *
+	 * @param term
+	 * @see <a href = "http://www.in-ulm.de/~mascheck/various/alternate_charset/">http://www.in-ulm.de/~mascheck/various/alternate_charset/</a>
+	 */
+	private static void lineDrawingCharsDemo(final Terminal term) {
+		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.println("Unicode line-drawing characters:");
+
+		term.setTextAttributes(CYAN, BLUE, NORMAL);
+		for (char i = '\u2500'; i <= '\u2590'; ) {
+			for (char j = 0; j <= 0xf; j++) {
+				term.print((char) (i + j));
+			}
+			term.println();
+			i += 0x10;
+		}
+
+		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.println("VT100 alternate character set:");
+
+		term.setTextAttributes(CYAN, BLUE, NORMAL);
+		term.startAlternateCs();
+		for (char i = 0x60; i <= 0x70; ) {
+			for (char j = 0; j <= 0xf; j++) {
+				term.print((char) (i + j));
+			}
+			term.println();
+			i += 0x10;
+		}
+		term.stopAlternateCs();
+
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
 	 * @param args
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -75,9 +129,18 @@ public abstract class InputDemo {
 				final String ttyName = args[0];
 				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler(new TerminalSizeHandler(new FilteringTerminalSizeHandler(new Echo()))));
 				term.start();
-			} else {
-				final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" " + InputDemo.class.getName();
 
+				lineDrawingCharsDemo(term);
+			} else {
+				final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" "
+						+ (System.getProperty("os.name").equals("Mac OS X")
+								? "-Dfile.encoding=\"`locale charmap`\" " // Apple's Java implementation default is MacRoman
+								: "")
+						+ InputDemo.class.getName();
+
+				if (System.getProperty("os.name").equals("Mac OS X")) {
+					System.setProperty("java.io.tmpdir", "/tmp");  // By default, /var/folders/Fv/FvLjTL7NHa06CiaNGkyzpE+++TI/-Tmp-/ is used
+				}
 				final File shellScript = File.createTempFile("synctimestamps-" + getProperty("user.name") + '-', ".sh");
 				final PrintWriter out = new PrintWriter(shellScript);
 				final String shell = getenv("SHELL");
