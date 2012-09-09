@@ -11,6 +11,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 
+import javax.annotation.Nullable;
+
+import com.sun.istack.internal.NotNull;
+
+
+
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
@@ -98,6 +104,79 @@ public final class Terminal extends PrintWriter {
 		this.print(';');
 		this.print(x);
 		this.print('H');
+		return this;
+	}
+
+	/**
+	 * VT100 alternate character set is not supported by PuTTY.
+	 */
+	public Terminal startAlternateCs() {
+		this.printEsc().print("(0");
+		return this;
+	}
+
+	/**
+	 * VT100 alternate character set is not supported by PuTTY.
+	 */
+	public Terminal stopAlternateCs() {
+		this.printEsc().print("(B");
+		return this;
+	}
+
+	/**
+	 * @param color
+	 */
+	public Terminal setForegroundColor(final Color color) {
+		return this.setTextAttributes(color, null);
+	}
+
+	/**
+	 * @param color
+	 */
+	public Terminal setBackgroundColor(final Color color) {
+		return this.setTextAttributes(null, color);
+	}
+
+	/**
+	 * @param attributes
+	 */
+	public Terminal setTextAttributes(@NotNull final TextAttribute ... attributes) {
+		return this.setTextAttributes(null, null, attributes);
+	}
+
+	/**
+	 * @param foreground
+	 * @param background
+	 * @param attributes
+	 */
+	public Terminal setTextAttributes(@Nullable final Color foreground,
+			@Nullable final Color background,
+			@NotNull final TextAttribute ... attributes) {
+		final StringBuilder s = new StringBuilder();
+
+		/*
+		 * Other text attributes may contain NORMAL (^[[0m),
+		 * so they should be applied *before* colors.
+		 */
+		for (final TextAttribute attribute : attributes) {
+			s.append(attribute.ordinal()).append(';');
+		}
+		if (foreground != null) {
+			s.append(30 + foreground.ordinal()).append(';');
+		}
+		if (background != null) {
+			s.append(40 + background.ordinal()).append(';');
+		}
+
+		final int length = s.length();
+		if (length != 0) {
+			s.deleteCharAt(length - 1);
+
+			this.printEsc().print('[');
+			this.print(s);
+			this.print('m');
+		}
+
 		return this;
 	}
 }
