@@ -19,13 +19,13 @@ import java.util.concurrent.BlockingQueue;
  */
 public final class SequenceConsumer extends Thread {
 	private final BlockingQueue<char[]> queue;
-	
+
 	private final Terminal term;
-	 
+
 	private final InputEventHandler handler;
-	
+
 	private static final Object LOCK = new Object();
-	
+
 	private static Thread instance;
 
 	/**
@@ -43,7 +43,7 @@ public final class SequenceConsumer extends Thread {
 		this.term = term;
 		this.handler = handler;
 	}
-	
+
 	/**
 	 * @param name
 	 * @param queue
@@ -77,7 +77,7 @@ public final class SequenceConsumer extends Thread {
 		}
 	}
 
-	
+
 	/**
 	 * @see Thread#run()
 	 */
@@ -85,7 +85,7 @@ public final class SequenceConsumer extends Thread {
 	public void run() {
 		try {
 			while (true) {
-				consume(this.queue.take());
+				this.consume(this.queue.take());
 			}
 		} catch (final InterruptedException ie) {
 			return;

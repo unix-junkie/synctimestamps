@@ -56,7 +56,7 @@ public final class TerminalSizeHandler implements InputEventHandler {
 							term.println("Terminal size of " + terminalSize + " reported.");
 							term.flush();
 						}
-						
+
 					});
 				} else {
 					term.requestTerminalSize();
