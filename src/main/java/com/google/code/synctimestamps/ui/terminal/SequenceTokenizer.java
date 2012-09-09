@@ -46,7 +46,7 @@ public final class SequenceTokenizer extends Thread {
 	final Object sequenceLock = new Object();
 
 	int sequencePositionMarker;
-	
+
 	private final BlockingQueue<char[]> sequences = new LinkedBlockingQueue<char[]>();
 
 
