@@ -3,7 +3,12 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BLACK;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Dimension.UNDEFINED;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
@@ -39,7 +44,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 
 	/**
 	 * The moment (in milliseconds) when {@link
-	 * #setExpectingTerminalSize(boolean) expectingTerminalSize}
+	 * #setExpectingTerminalSize(boolean, Terminal) expectingTerminalSize}
 	 * was set to {@code true}. If this value is {@code 0L}, then
 	 * {@link #isExpectingTerminalSize() expectingTerminalSize} flag
 	 * is {@code false}.
@@ -84,12 +89,20 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 							final VtTerminalSize terminalSize0 = (VtTerminalSize) vtKeyOrResponse;
 							it.remove();
 
-							final int width = terminalSize0.getWidth();
-							final int height = terminalSize0.getHeight();
-							final long t1 = System.currentTimeMillis();
-							term.println("Terminal size of " + width + 'x' + height + " reported " + (t1 - this.t0) + " ms after the request.");
+							final Dimension terminalSize1 = new Dimension(terminalSize0);
+
+							if (isDebugMode()) {
+								final long t1 = System.currentTimeMillis();
+								
+								term.setTextAttributes(RED, WHITE, BOLD);
+								term.print("DEBUG:");
+								term.setTextAttributes(BLACK, WHITE, BOLD);
+								term.println(" Terminal size of " + terminalSize1 + " reported " + (t1 - this.t0) + " ms after the request.");
+								term.setTextAttributes(NORMAL);
+							}
+
 							synchronized (this.terminalSizeLock) {
-								this.terminalSize = new Dimension(terminalSize0);
+								this.terminalSize = terminalSize1;
 								this.terminalSizeLock.notifyAll();
 							}
 
@@ -191,7 +204,14 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 								 * This background task can easily expire
 								 * if multiple events are being collected.
 								 */
-								term.println("Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
+								if (isDebugMode()) {
+									term.setTextAttributes(RED, WHITE, BOLD);
+									term.print("DEBUG:");
+									term.setTextAttributes(BLACK, WHITE, BOLD);
+									term.println(" Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
+									term.setTextAttributes(NORMAL);
+								}
+				
 								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
 									FilteringTerminalSizeHandler.this.terminalSize = UNDEFINED;
 									FilteringTerminalSizeHandler.this.terminalSizeLock.notifyAll();
@@ -216,5 +236,12 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 		synchronized (this.expectingTerminalSizeLock) {
 			return this.t0 != 0L;
 		}
+	}
+	
+	/**
+	 * @return whether debug mode is turned on.
+	 */
+	static boolean isDebugMode() {
+		return true;
 	}
 }
