@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class VtCursorPosition extends VtResponse {
+public final class VtCursorLocation extends VtResponse {
 	public static final Pattern PATTERN = Pattern.compile("\\e\\[(\\d+)\\;(\\d+)R");
 
 	private final int x;
@@ -21,7 +21,7 @@ public final class VtCursorPosition extends VtResponse {
 	/**
 	 * @param event
 	 */
-	VtCursorPosition(final InputEvent event) {
+	VtCursorLocation(final InputEvent event) {
 		if (event == null) {
 			throw new IllegalArgumentException("event is null");
 		}
@@ -48,6 +48,6 @@ public final class VtCursorPosition extends VtResponse {
 	 */
 	@Override
 	protected StringBuilder appendDescription(final StringBuilder s) {
-		return s.append("Cursor position: +").append(this.x).append('+').append(this.y);
+		return s.append("Cursor location: +").append(this.x).append('+').append(this.y);
 	}
 }
