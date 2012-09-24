@@ -138,15 +138,15 @@ public enum TerminalType {
 				return new VtTerminalSize(from);
 			}
 		}, VtTerminalSize.PATTERN);
-		this.registerVtResponse(new Function<InputEvent, VtCursorPosition>() {
+		this.registerVtResponse(new Function<InputEvent, VtCursorLocation>() {
 			/**
 			 * @param from
 			 */
 			@Override
-			public VtCursorPosition apply(final InputEvent from) {
-				return new VtCursorPosition(from);
+			public VtCursorLocation apply(final InputEvent from) {
+				return new VtCursorLocation(from);
 			}
-		}, VtCursorPosition.PATTERN);
+		}, VtCursorLocation.PATTERN);
 
 		/*
 		 * On a per-terminal basis.
