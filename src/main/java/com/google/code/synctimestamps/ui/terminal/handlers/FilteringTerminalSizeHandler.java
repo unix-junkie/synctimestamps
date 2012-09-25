@@ -16,9 +16,11 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
+import com.google.code.synctimestamps.ui.terminal.Point;
 import com.google.code.synctimestamps.ui.terminal.SequenceConsumer;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
@@ -31,14 +33,14 @@ import com.google.code.synctimestamps.ui.terminal.VtTerminalSize;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class FilteringTerminalSizeHandler implements InputEventHandler, TerminalSizeProvider {
+public final class FilteringTerminalSizeHandler extends AbstractInputEventHandler implements TerminalSizeProvider {
+	boolean nextIsFiltering;
+
 	/**
 	 * Terminal emulator on the same host: ~50 ms.<br>
 	 * Local area connection: ~220 ms.
 	 */
 	private static long DEFAULT_EXPECTING_TIMEOUT_MILLIS = 250;
-
-	private final InputEventHandler next;
 
 	final Object expectingTerminalSizeLock = new Object();
 
@@ -59,17 +61,33 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 
 	final Object terminalSizeLock = new Object();
 
+	public FilteringTerminalSizeHandler() {
+		this(null);
+	}
+
+	/**
+	 * @param next
+	 */
+	public FilteringTerminalSizeHandler(final InputEventHandler next) {
+		this(next, DEFAULT_EXPECTING_TIMEOUT_MILLIS);
+	}
+
 	/**
 	 * @param next
 	 * @param expectingTimeoutMillis
 	 */
 	public FilteringTerminalSizeHandler(final InputEventHandler next, final long expectingTimeoutMillis) {
-		this.next = next;
+		super(next);
 		this.expectingTimeoutMillis = expectingTimeoutMillis;
 	}
 
-	public FilteringTerminalSizeHandler(final InputEventHandler next) {
-		this(next, DEFAULT_EXPECTING_TIMEOUT_MILLIS);
+	/**
+	 * @see AbstractInputEventHandler#setNext(InputEventHandler)
+	 */
+	@Override
+	void setNext(final InputEventHandler next) {
+		super.setNext(next);
+		this.nextIsFiltering = next instanceof CursorLocationProvider;
 	}
 
 	/**
@@ -93,7 +111,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 
 							if (isDebugMode()) {
 								final long t1 = System.currentTimeMillis();
-								
+
 								term.setTextAttributes(RED, WHITE, BOLD);
 								term.print("DEBUG:");
 								term.setTextAttributes(BLACK, WHITE, BOLD);
@@ -211,15 +229,25 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 									term.println(" Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
 									term.setTextAttributes(NORMAL);
 								}
-				
-								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
-									FilteringTerminalSizeHandler.this.terminalSize = UNDEFINED;
-									FilteringTerminalSizeHandler.this.terminalSizeLock.notifyAll();
+
+								final Point cursorLocation;
+								if (FilteringTerminalSizeHandler.this.nextIsFiltering) {
+									/*
+									 * Workaround for buggy terminals
+									 */
+									term.setCursorLocation(999, 999);
+									final CursorLocationProvider handler = (CursorLocationProvider) FilteringTerminalSizeHandler.this.next;
+									cursorLocation = handler.getCursorLocation(term);
+								} else {
+									cursorLocation = null;
 								}
 
-								term.setCursorLocation(999, 999).requestCursorLocation(); // Workaround for buggy terminals
-								term.println(); // Temporary, only as long as we don't return the cursor to its original position
-								term.flush();
+								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
+									FilteringTerminalSizeHandler.this.terminalSize = cursorLocation == null || cursorLocation.isUndefined()
+											? UNDEFINED
+											: new Dimension(cursorLocation.getX(), cursorLocation.getY());
+									FilteringTerminalSizeHandler.this.terminalSizeLock.notifyAll();
+								}
 							}
 						}
 					}
@@ -237,7 +265,7 @@ public final class FilteringTerminalSizeHandler implements InputEventHandler, Te
 			return this.t0 != 0L;
 		}
 	}
-	
+
 	/**
 	 * @return whether debug mode is turned on.
 	 */

@@ -25,18 +25,18 @@ public final class Point {
 	}
 
 	/**
-	 * @param cursorPosition
+	 * @param cursorLocation
 	 */
-	public Point(final VtCursorLocation cursorPosition) {
-		this.x = cursorPosition.getX();
-		this.y = cursorPosition.getY();
+	public Point(final VtCursorLocation cursorLocation) {
+		this.x = cursorLocation.getX();
+		this.y = cursorLocation.getY();
 	}
 
 	public int getX() {
 		return this.x;
 	}
 
-	public int getHeight() {
+	public int getY() {
 		return this.y;
 	}
 
@@ -47,5 +47,29 @@ public final class Point {
 	public String toString() {
 		return (this.x >= 0 ? "+" : "") + this.x
 				+ (this.y >= 0 ? "+" : "") + this.y;
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof Point) {
+			final Point that = (Point) obj;
+			return this.x == that.x && this.y == that.y;
+		}
+		return false;
+	}
+	
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return this.x ^ this.y;
+	}
+	
+	public boolean isUndefined() {
+		return this.equals(UNDEFINED);
 	}
 }
