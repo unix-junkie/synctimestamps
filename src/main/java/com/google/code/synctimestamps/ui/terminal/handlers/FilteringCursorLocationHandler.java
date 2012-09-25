@@ -102,7 +102,7 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 								term.setTextAttributes(RED, WHITE, BOLD);
 								term.print("DEBUG:");
 								term.setTextAttributes(BLACK, WHITE, BOLD);
-								term.println(" Cursor position of " + cursorLocation1 + " reported " + (t1 - this.t0) + " ms after the request.");
+								term.println(" Cursor location of " + cursorLocation1 + " reported " + (t1 - this.t0) + " ms after the request.");
 								term.setTextAttributes(NORMAL);
 							}
 
