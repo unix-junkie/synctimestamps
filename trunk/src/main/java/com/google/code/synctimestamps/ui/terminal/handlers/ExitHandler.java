@@ -14,14 +14,16 @@ import com.google.code.synctimestamps.ui.terminal.Terminal;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class ExitHandler implements InputEventHandler {
-	private final InputEventHandler next;
+public final class ExitHandler extends AbstractInputEventHandler {
+	public ExitHandler() {
+		this(null);
+	}
 
 	/**
 	 * @param next
 	 */
 	public ExitHandler(final InputEventHandler next) {
-		this.next = next;
+		super(next);
 	}
 
 	/**

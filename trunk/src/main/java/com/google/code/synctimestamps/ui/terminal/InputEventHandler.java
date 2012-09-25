@@ -21,4 +21,9 @@ public interface InputEventHandler {
 	 * @param term
 	 */
 	void printUsage(final Terminal term);
+
+	/**
+	 * @param next
+	 */
+	InputEventHandler append(final InputEventHandler next);
 }

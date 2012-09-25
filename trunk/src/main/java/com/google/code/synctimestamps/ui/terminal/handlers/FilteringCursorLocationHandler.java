@@ -31,14 +31,12 @@ import com.google.code.synctimestamps.ui.terminal.VtKeyOrResponse;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class FilteringCursorLocationHandler implements InputEventHandler, CursorLocationProvider {
+public final class FilteringCursorLocationHandler extends AbstractInputEventHandler implements CursorLocationProvider {
 	/**
 	 * Terminal emulator on the same host: ~50 ms.<br>
 	 * Local area connection: ~220 ms.
 	 */
 	private static long DEFAULT_EXPECTING_TIMEOUT_MILLIS = 250;
-
-	private final InputEventHandler next;
 
 	final Object expectingCursorLocationLock = new Object();
 
@@ -59,17 +57,24 @@ public final class FilteringCursorLocationHandler implements InputEventHandler, 
 
 	final Object cursorLocationLock = new Object();
 
+	public FilteringCursorLocationHandler() {
+		this(null);
+	}
+
+	/**
+	 * @param next
+	 */
+	public FilteringCursorLocationHandler(final InputEventHandler next) {
+		this(next, DEFAULT_EXPECTING_TIMEOUT_MILLIS);
+	}
+
 	/**
 	 * @param next
 	 * @param expectingTimeoutMillis
 	 */
 	public FilteringCursorLocationHandler(final InputEventHandler next, final long expectingTimeoutMillis) {
-		this.next = next;
+		super(next);
 		this.expectingTimeoutMillis = expectingTimeoutMillis;
-	}
-
-	public FilteringCursorLocationHandler(final InputEventHandler next) {
-		this(next, DEFAULT_EXPECTING_TIMEOUT_MILLIS);
 	}
 
 	/**
@@ -93,7 +98,7 @@ public final class FilteringCursorLocationHandler implements InputEventHandler, 
 
 							if (isDebugMode()) {
 								final long t1 = System.currentTimeMillis();
-								
+
 								term.setTextAttributes(RED, WHITE, BOLD);
 								term.print("DEBUG:");
 								term.setTextAttributes(BLACK, WHITE, BOLD);
@@ -208,10 +213,10 @@ public final class FilteringCursorLocationHandler implements InputEventHandler, 
 									term.setTextAttributes(RED, WHITE, BOLD);
 									term.print("DEBUG:");
 									term.setTextAttributes(BLACK, WHITE, BOLD);
-									term.println(" Timed out waiting for cursor position for " + FilteringCursorLocationHandler.this.expectingTimeoutMillis + " ms.");
+									term.println(" Timed out waiting for cursor location for " + FilteringCursorLocationHandler.this.expectingTimeoutMillis + " ms.");
 									term.setTextAttributes(NORMAL);
 								}
-				
+
 								synchronized (FilteringCursorLocationHandler.this.cursorLocationLock) {
 									FilteringCursorLocationHandler.this.cursorLocation = UNDEFINED;
 									FilteringCursorLocationHandler.this.cursorLocationLock.notifyAll();
@@ -233,7 +238,7 @@ public final class FilteringCursorLocationHandler implements InputEventHandler, 
 			return this.t0 != 0L;
 		}
 	}
-	
+
 	/**
 	 * @return whether debug mode is turned on.
 	 */

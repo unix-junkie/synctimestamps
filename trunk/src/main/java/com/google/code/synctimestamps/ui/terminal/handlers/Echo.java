@@ -14,9 +14,7 @@ import com.google.code.synctimestamps.ui.terminal.Terminal;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class Echo implements InputEventHandler {
-	private final InputEventHandler next;
-
+public final class Echo extends AbstractInputEventHandler {
 	public Echo() {
 		this(null);
 	}
@@ -25,7 +23,7 @@ public final class Echo implements InputEventHandler {
 	 * @param next
 	 */
 	public Echo(final InputEventHandler next) {
-		this.next = next;
+		super(next);
 	}
 
 	/**

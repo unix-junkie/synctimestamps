@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
+import com.google.code.synctimestamps.ui.terminal.handlers.FilteringCursorLocationHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.FilteringTerminalSizeHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
 
@@ -127,7 +128,9 @@ public abstract class InputDemo {
 				 * TTY device specified.
 				 */
 				final String ttyName = args[0];
-				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler(new TerminalSizeHandler(new FilteringTerminalSizeHandler(new Echo()))));
+				final InputEventHandler rootHandler = new ExitHandler();
+				rootHandler.append(new TerminalSizeHandler()).append(new FilteringTerminalSizeHandler()).append(new FilteringCursorLocationHandler()).append(new Echo());
+				final Terminal term = new Terminal(ttyName, getenv("TERM"), rootHandler);
 				term.start();
 
 				lineDrawingCharsDemo(term);

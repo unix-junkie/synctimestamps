@@ -18,18 +18,28 @@ import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class TerminalSizeHandler implements InputEventHandler {
-	private final InputEventHandler next;
-
-	private final boolean nextIsFiltering;
+public final class TerminalSizeHandler extends AbstractInputEventHandler {
+	private boolean nextIsFiltering;
 
 	private final ExecutorService background = Executors.newSingleThreadExecutor();
+
+	public TerminalSizeHandler() {
+		this(null);
+	}
 
 	/**
 	 * @param next
 	 */
 	public TerminalSizeHandler(final InputEventHandler next) {
-		this.next = next;
+		super(next);
+	}
+
+	/**
+	 * @see AbstractInputEventHandler#setNext(InputEventHandler)
+	 */
+	@Override
+	void setNext(final InputEventHandler next) {
+		super.setNext(next);
 		this.nextIsFiltering = next instanceof TerminalSizeProvider;
 	}
 
