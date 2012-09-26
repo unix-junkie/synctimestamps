@@ -18,12 +18,12 @@ public abstract class Handlers {
 	private Handlers() {
 		assert false;
 	}
-	
+
 	public static TerminalSizeProvider asTerminalSizeProvider(final CursorLocationProvider cursorLocationProvider) {
 		if (cursorLocationProvider == null) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		return new TerminalSizeProvider() {
 			/**
 			 * @see TerminalSizeProvider#getTerminalSize(Terminal)

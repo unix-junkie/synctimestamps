@@ -9,6 +9,8 @@ import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Dimension.UNDEFINED;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
+import static java.lang.Boolean.getBoolean;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
@@ -20,7 +22,6 @@ import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
-import com.google.code.synctimestamps.ui.terminal.Point;
 import com.google.code.synctimestamps.ui.terminal.SequenceConsumer;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
@@ -62,7 +63,7 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 	final Object terminalSizeLock = new Object();
 
 	public FilteringTerminalSizeHandler() {
-		this(null);
+		this(new FilteringCursorLocationHandler());
 	}
 
 	/**
@@ -163,6 +164,8 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 			throw new IllegalStateException();
 		}
 
+		final Dimension lastTerminalSize;
+
 		synchronized (this.terminalSizeLock) {
 			/*
 			 * Re-set the previously stored value.
@@ -171,8 +174,7 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 
 			this.setExpectingTerminalSize(true, term);
 
-			term.requestTerminalSize();
-			term.flush();
+			term.requestTerminalSize().flush();
 
 			while (this.terminalSize == null) {
 				try {
@@ -185,8 +187,14 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 				}
 			}
 
-			return this.terminalSize;
+			assert this.terminalSize != null;
+
+			lastTerminalSize = this.terminalSize;
 		}
+
+		return lastTerminalSize.isUndefined() && this.nextIsFiltering
+				? asTerminalSizeProvider((CursorLocationProvider) this.next).getTerminalSize(term)
+				: lastTerminalSize;
 	}
 
 	/**
@@ -230,22 +238,8 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 									term.setTextAttributes(NORMAL);
 								}
 
-								final Point cursorLocation;
-								if (FilteringTerminalSizeHandler.this.nextIsFiltering) {
-									/*
-									 * Workaround for buggy terminals
-									 */
-									term.setCursorLocation(999, 999);
-									final CursorLocationProvider handler = (CursorLocationProvider) FilteringTerminalSizeHandler.this.next;
-									cursorLocation = handler.getCursorLocation(term);
-								} else {
-									cursorLocation = null;
-								}
-
 								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
-									FilteringTerminalSizeHandler.this.terminalSize = cursorLocation == null || cursorLocation.isUndefined()
-											? UNDEFINED
-											: new Dimension(cursorLocation.getX(), cursorLocation.getY());
+									FilteringTerminalSizeHandler.this.terminalSize = UNDEFINED;
 									FilteringTerminalSizeHandler.this.terminalSizeLock.notifyAll();
 								}
 							}
@@ -270,6 +264,6 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 	 * @return whether debug mode is turned on.
 	 */
 	static boolean isDebugMode() {
-		return true;
+		return getBoolean("terminal.debug");
 	}
 }

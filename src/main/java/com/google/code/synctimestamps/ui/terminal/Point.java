@@ -50,7 +50,7 @@ public final class Point {
 	}
 
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @see Object#equals(Object)
 	 */
 	@Override
 	public boolean equals(final Object obj) {
@@ -60,15 +60,15 @@ public final class Point {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * @see java.lang.Object#hashCode()
+	 * @see Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
 		return this.x ^ this.y;
 	}
-	
+
 	public boolean isUndefined() {
 		return this.equals(UNDEFINED);
 	}

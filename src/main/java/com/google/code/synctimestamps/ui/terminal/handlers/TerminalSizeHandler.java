@@ -27,7 +27,7 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 	private final ExecutorService background = Executors.newSingleThreadExecutor();
 
 	public TerminalSizeHandler() {
-		this(null);
+		this(new FilteringTerminalSizeHandler());
 	}
 
 	/**

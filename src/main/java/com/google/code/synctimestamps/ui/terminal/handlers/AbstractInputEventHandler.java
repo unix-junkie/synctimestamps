@@ -42,8 +42,12 @@ abstract class AbstractInputEventHandler implements InputEventHandler {
 			throw new IllegalArgumentException();
 		}
 
-		this.setNext(next0);
+		if (this.next == null) {
+			this.setNext(next0);
+		} else {
+			this.next.append(next0);
+		}
 
-		return next0;
+		return this;
 	}
 }

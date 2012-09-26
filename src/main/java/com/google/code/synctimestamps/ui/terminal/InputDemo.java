@@ -18,8 +18,6 @@ import java.io.PrintWriter;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.FilteringCursorLocationHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.FilteringTerminalSizeHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
 
 /**
@@ -128,9 +126,7 @@ public abstract class InputDemo {
 				 * TTY device specified.
 				 */
 				final String ttyName = args[0];
-				final InputEventHandler rootHandler = new ExitHandler();
-				rootHandler.append(new TerminalSizeHandler()).append(new FilteringTerminalSizeHandler()).append(new FilteringCursorLocationHandler()).append(new Echo());
-				final Terminal term = new Terminal(ttyName, getenv("TERM"), rootHandler);
+				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler().append(new TerminalSizeHandler()).append(new Echo()));
 				term.start();
 
 				lineDrawingCharsDemo(term);
@@ -139,6 +135,7 @@ public abstract class InputDemo {
 						+ (System.getProperty("os.name").equals("Mac OS X")
 								? "-Dfile.encoding=\"`locale charmap`\" " // Apple's Java implementation default is MacRoman
 								: "")
+//						+ "-Dterminal.debug=true "
 						+ InputDemo.class.getName();
 
 				if (System.getProperty("os.name").equals("Mac OS X")) {
