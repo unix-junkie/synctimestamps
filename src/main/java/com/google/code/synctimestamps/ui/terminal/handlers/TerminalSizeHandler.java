@@ -3,10 +3,13 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
@@ -40,7 +43,7 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 	@Override
 	void setNext(final InputEventHandler next) {
 		super.setNext(next);
-		this.nextIsFiltering = next instanceof TerminalSizeProvider;
+		this.nextIsFiltering = next instanceof TerminalSizeProvider || next instanceof CursorLocationProvider;
 	}
 
 	/**
@@ -55,7 +58,9 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 		for (final InputEvent event : events) {
 			if (event.isControlWith('L')) {
 				if (this.nextIsFiltering) {
-					final TerminalSizeProvider handler = (TerminalSizeProvider) this.next;
+					final TerminalSizeProvider handler = this.next instanceof TerminalSizeProvider
+							? (TerminalSizeProvider) this.next
+							: asTerminalSizeProvider((CursorLocationProvider) this.next);
 					this.background.submit(new Runnable() {
 						/**
 						 * @see Runnable#run()
