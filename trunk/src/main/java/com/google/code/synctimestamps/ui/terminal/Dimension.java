@@ -47,4 +47,28 @@ public final class Dimension {
 	public String toString() {
 		return this.width + "x" + this.height;
 	}
+
+	/**
+	 * @see Object#equals(Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj instanceof Dimension) {
+			final Dimension that = (Dimension) obj;
+			return this.width == that.width && this.height == that.height;
+		}
+		return false;
+	}
+
+	/**
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return this.width ^ this.height;
+	}
+
+	public boolean isUndefined() {
+		return this.equals(UNDEFINED);
+	}
 }

@@ -9,6 +9,7 @@ import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Point.UNDEFINED;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+import static java.lang.Boolean.getBoolean;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
@@ -158,8 +159,7 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 
 			this.setExpectingCursorLocation(true, term);
 
-			term.requestCursorLocation();
-			term.flush();
+			term.requestCursorLocation().flush();
 
 			while (this.cursorLocation == null) {
 				try {
@@ -171,6 +171,8 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 					break;
 				}
 			}
+
+			assert this.cursorLocation != null;
 
 			return this.cursorLocation;
 		}
@@ -243,6 +245,6 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 	 * @return whether debug mode is turned on.
 	 */
 	static boolean isDebugMode() {
-		return true;
+		return getBoolean("terminal.debug");
 	}
 }
