@@ -5,6 +5,9 @@ package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
 import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
+import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
@@ -15,6 +18,7 @@ import static java.lang.System.getenv;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
@@ -55,6 +59,35 @@ public abstract class InputDemo {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @param charsetName
+	 * @return the full contents of an 8-bit codepage.
+	 */
+	private static String getEightBitContents(final String charsetName) {
+		final byte bytes[] = new byte[256];
+		for (int i = 0; i < bytes.length; i++) {
+			bytes[i] = (byte) i;
+		}
+
+		try {
+			return new String(bytes, charsetName);
+		} catch (final UnsupportedEncodingException uee) {
+			return "";
+		}
+	}
+
+	private static CharSequence toHexString(final int i, final int padUpToLength, final boolean addPrefix) {
+		final String s0 = Integer.toHexString(i);
+		final StringBuilder s1 = new StringBuilder();
+		if (addPrefix) {
+			s1.append("0x");
+		}
+		for (int j = 0; j < padUpToLength - s0.length(); j++) {
+			s1.append('0');
+		}
+		return s1.append(s0);
 	}
 
 	/**
@@ -102,8 +135,44 @@ public abstract class InputDemo {
 		}
 		term.stopAlternateCs();
 
+		dumpCodepage(term, "CP437");
+		dumpCodepage(term, "CP866");
+		dumpCodepage(term, "KOI8-R");
+
 		term.setTextAttributes(NORMAL);
 		term.flush();
+	}
+
+	/**
+	 * @param term
+	 * @param charsetName
+	 */
+	private static void dumpCodepage(final Terminal term, final String charsetName) {
+		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.println(charsetName + " line-drawing characters:");
+
+		final String cp437 = getEightBitContents(charsetName);
+		for (int i = 0x00; i <= 0xf0; ) {
+			term.setTextAttributes(GREEN, BLUE, BOLD);
+			term.print(toHexString(i, 2, true));
+			term.setTextAttributes(CYAN, BLUE, NORMAL);
+			for (int j = 0x0; j <= 0xf; j++) {
+				if (j != 0) {
+					term.print("    ");
+				}
+				term.print(cp437.charAt(i + j));
+			}
+			term.println();
+
+			for (int j = 0x0; j <= 0xf; j++) {
+				final boolean emphasize = cp437.charAt(i + j) > 0xff;
+				term.setTextAttributes(emphasize ? RED : WHITE, BLUE, emphasize ? BOLD : NORMAL);
+				term.print(' ');
+				term.print(toHexString(cp437.charAt(i + j), 4, false));
+			}
+			term.println();
+			i += 0x10;
+		}
 	}
 
 	/**
