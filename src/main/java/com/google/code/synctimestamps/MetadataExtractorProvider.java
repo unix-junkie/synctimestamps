@@ -3,6 +3,10 @@
  */
 package com.google.code.synctimestamps;
 
+import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME;
+import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME_DIGITIZED;
+import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME_ORIGINAL;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -61,17 +65,22 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			final ExifReader exifReader = new ExifReader(exifInfo);
 			final Metadata metadata = exifReader.extract();
 			final Directory directory = metadata.getDirectory(ExifDirectory.class);
-			if (!directory.containsTag(ExifDirectory.TAG_DATETIME)) {
-				return null;
+			
+			/*-
+			 * Certain digital cameras don't add any DateTime tag,
+			 * but still add DateTimeOriginal and/or DateTimeDigitized.
+			 */
+			for (final int tagType : new int[]{TAG_DATETIME, TAG_DATETIME_ORIGINAL, TAG_DATETIME_DIGITIZED}) {
+				final Date dateTime = getDateTime(directory, tagType);
+				if (dateTime == null) {
+					continue;
+				}
+				return dateTime;
 			}
 
-			final Date dateTime = directory.getDate(ExifDirectory.TAG_DATETIME);
-			return dateTime.getTime() < 0 ? null : dateTime;
+			return null;
 		} catch (final IOException ioe) {
 			ioe.printStackTrace();
-			return null;
-		} catch (final MetadataException me) {
-			me.printStackTrace();
 			return null;
 		}
 	}
@@ -138,6 +147,24 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			return markerTagValue == 0xe1;
 		} catch (final NumberFormatException nfe) {
 			return false;
+		}
+	}
+
+	/**
+	 * @param directory
+	 * @param tagType
+	 */
+	private static Date getDateTime(final Directory directory, final int tagType) {
+		try {
+			if (!directory.containsTag(tagType)) {
+				return null;
+			}
+
+			final Date dateTime = directory.getDate(tagType);
+			return dateTime.getTime() < 0 ? null : dateTime;
+		} catch (final MetadataException me) {
+			me.printStackTrace();
+			return null;
 		}
 	}
 }

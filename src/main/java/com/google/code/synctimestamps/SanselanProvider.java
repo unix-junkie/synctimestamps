@@ -3,6 +3,10 @@
  */
 package com.google.code.synctimestamps;
 
+import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_CREATE_DATE;
+import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL;
+import static org.apache.sanselan.formats.tiff.constants.TiffTagConstants.TIFF_TAG_DATE_TIME;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -15,7 +19,7 @@ import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.common.IImageMetadata;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
 import org.apache.sanselan.formats.tiff.TiffField;
-import org.apache.sanselan.formats.tiff.constants.TiffTagConstants;
+import org.apache.sanselan.formats.tiff.constants.TagInfo;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -45,8 +49,37 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 				return null;
 			}
 
+			/*-
+			 * Certain digital cameras don't add any DateTime tag,
+			 * but still add DateTimeOriginal and/or DateTimeDigitized.
+			 */
 			final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-			final TiffField field = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_DATE_TIME);
+			for (final TagInfo tagInfo : new TagInfo[]{TIFF_TAG_DATE_TIME, EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE}) {
+				final Date dateTime = getDateTime(file, jpegMetadata, tagInfo);
+				if (dateTime == null) {
+					continue;
+				}
+				return dateTime;
+			}
+			
+			return null;
+		} catch (final ImageReadException ire) {
+			/*
+			 * Silently return null if file format is unsupported
+			 * (e.g.: *.avi, *.3gp)
+			 */
+			return null;
+		}
+	}
+
+	/**
+	 * @param file
+	 * @param jpegMetadata
+	 * @param tagInfo
+	 */
+	private Date getDateTime(final File file, final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
+		try {
+			final TiffField field = jpegMetadata.findEXIFValue(tagInfo);
 			if (field == null) {
 				return null;
 			}
@@ -71,9 +104,9 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			}
 		} catch (final ImageReadException ire) {
 			/*
-			 * Silently return null if file format is unsupported
-			 * (e.g.: *.avi, *.3gp)
+			 * Never.
 			 */
+			ire.printStackTrace();
 			return null;
 		}
 	}
