@@ -3,6 +3,12 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+
 import java.util.Arrays;
 
 /**
@@ -13,6 +19,8 @@ import java.util.Arrays;
  * @version $Revision$, $Date$
  */
 public final class InputEvent implements CharSequence {
+	public static final char BELL = '\007';
+
 	public static final char BACKSPACE = '\b';
 
 	public static final char TAB = '\t';
@@ -42,51 +50,46 @@ public final class InputEvent implements CharSequence {
 		this.data = data;
 	}
 
-	private static CharSequence toHumanReadable(final char c) {
-		final StringBuilder s = new StringBuilder();
-
+	/**
+	 * @param term
+	 * @param c
+	 */
+	private static void toHumanReadable(final Terminal term, final char c) {
 		/*
 		 * Try to exclude most of the control characters.
 		 */
 		if (0 <= c && c <= 31) {
-			/*
-			 * White on green
-			 */
-			s.append(ESC).append("[1;37;42m");
+			term.setTextAttributes(WHITE, GREEN, BOLD);
 
 			/*
 			 * Those definitely are the control characters.
 			 */
-			s.append("^" + (char) ('@' + c));
+			term.print("^" + (char) ('@' + c));
 			switch (c) {
 			case BACKSPACE:
-				s.append("/BackSpace");
+				term.print("/BackSpace");
 				break;
 			case TAB:
-				s.append("/Tab");
+				term.print("/Tab");
 				break;
 			case ENTER:
-				s.append("/Enter");
+				term.print("/Enter");
 				break;
 			case ESC:
-				s.append("/Escape");
+				term.print("/Escape");
 				break;
 			}
 		} else if (c == DELETE) {
-			/*
-			 * White on green
-			 */
-			s.append(ESC).append("[1;37;42m");
+			term.setTextAttributes(WHITE, GREEN, BOLD);
 
-			s.append((int) c).append("/Delete");
+			term.print((int) c);
+			term.print("/Delete");
 		} else {
 			/*
 			 * Most probably, alphanumeric or punctuation.
 			 */
-			s.append(c);
+			term.print(c);
 		}
-
-		return s;
 	}
 
 
@@ -116,36 +119,35 @@ public final class InputEvent implements CharSequence {
 	}
 
 	/**
-	 * @see Object#toString()
+	 * @param term
 	 */
-	@Override
-	public String toString() {
+	public void toString(final Terminal term) {
 		if (this.terminalType.isKnownEscapeSequence(this)) {
-			return this.terminalType.getVtKeyOrResponse(this).toString();
+			this.terminalType.getVtKeyOrResponse(this).toString(term);
+			return;
 		}
 
 		/*
 		 * Fallback implementation.
 		 */
-		final StringBuilder s = new StringBuilder();
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print('[');
+		term.setTextAttributes(NORMAL);
 
-		s.append(ESC).append("[0;1;31m");
-		s.append('[');
-		s.append(ESC).append("[0m");
-
-		for (final char c : this.data) {
-			s.append(toHumanReadable(c));
-			s.append(' ');
+		for (int i = 0, n = this.data.length; i < n; i++) {
+			toHumanReadable(term, this.data[i]);
+			if (i == n - 1) {
+				/*
+				 * Don't print the space after the last item.
+				 */
+				continue;
+			}
+			term.print(' ');
 		}
-		if (this.data.length > 0) {
-			s.deleteCharAt(s.length() - 1);
-		}
 
-		s.append(ESC).append("[0;1;31m");
-		s.append(']');
-		s.append(ESC).append("[0m");
-
-		return s.toString();
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print(']');
+		term.setTextAttributes(NORMAL);
 	}
 
 	/**

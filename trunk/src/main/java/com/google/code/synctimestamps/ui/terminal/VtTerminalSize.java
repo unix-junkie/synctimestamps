@@ -46,10 +46,14 @@ public final class VtTerminalSize extends VtResponse {
 	}
 
 	/**
-	 * @see VtResponse#appendDescription(StringBuilder)
+	 * @see VtResponse#appendDescription(Terminal)
 	 */
 	@Override
-	protected StringBuilder appendDescription(final StringBuilder s) {
-		return s.append("Terminal size: ").append(this.width).append('x').append(this.height);
+	protected Terminal appendDescription(final Terminal term) {
+		term.print("Terminal size: ");
+		term.print(this.width);
+		term.print('x');
+		term.print(this.height);
+		return term;
 	}
 }

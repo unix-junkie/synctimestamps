@@ -4,6 +4,8 @@
 package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+import static com.google.code.synctimestamps.ui.terminal.TitleWriter.NONE;
+import static com.google.code.synctimestamps.ui.terminal.TitleWriter.OLD_STYLE;
 import static com.google.code.synctimestamps.ui.terminal.VtKey.DELETE;
 import static com.google.code.synctimestamps.ui.terminal.VtKey.DOWN;
 import static com.google.code.synctimestamps.ui.terminal.VtKey.END;
@@ -41,27 +43,27 @@ import com.google.common.base.Function;
  * @version $Revision$, $Date$
  */
 public enum TerminalType {
-	ANSI("ansi"),
-	DTTERM("dtterm"),
+	ANSI("ansi", NONE),
+	DTTERM("dtterm", OLD_STYLE),
 	/**
 	 * SunOS rxvt reports TERM=kterm.
 	 */
-	KTERM("kterm"),
-	LINUX("linux"),
+	KTERM("kterm", OLD_STYLE),
+	LINUX("linux", NONE),
 	RXVT("rxvt"),
 	RXVT_UNICODE("rxvt-unicode"),
 	RXVT_UNICODE_256COLOR("rxvt-unicode-256color"),
 	SCOANSI("scoansi"),
-	SCREEN("screen"),
+	SCREEN("screen", OLD_STYLE),
 	SCREEN_LINUX("screen.linux"),
 	SUN_CMD("sun-cmd"),
-	SUN_COLOR("sun-color"),
-	VT52("vt52"),
-	VT100("vt100"),
-	VT320("vt320"),
-	VTNT("vtnt"),
+	SUN_COLOR("sun-color", NONE),
+	VT52("vt52", NONE),
+	VT100("vt100", NONE),
+	VT320("vt320", NONE),
+	VTNT("vtnt", NONE),
 	XTERM("xterm"),
-	CYGWIN("cygwin"),
+	CYGWIN("cygwin", OLD_STYLE),
 	;
 
 	static {
@@ -76,6 +78,8 @@ public enum TerminalType {
 	}
 
 	private final String term;
+
+	private final TitleWriter titleWriter;
 
 	private final Map<InputEvent, VtKey> knownEscapeSequences = new HashMap<InputEvent, VtKey>();
 
@@ -122,7 +126,16 @@ public enum TerminalType {
 	 * @param term
 	 */
 	private TerminalType(final String term) {
+		this(term, TitleWriter.ANSI);
+	}
+
+	/**
+	 * @param term
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term, final TitleWriter titleWriter) {
 		this.term = term;
+		this.titleWriter = titleWriter;
 	}
 
 	private void registerEscapeSequences() {
@@ -180,6 +193,7 @@ public enum TerminalType {
 			//$FALL-THROUGH$
 		case ANSI:
 		case SCREEN_LINUX:
+		case VTNT:
 			this.registerAnsiFunctionKeys();
 
 			this.registerAnsiKeypad();
@@ -223,11 +237,6 @@ public enum TerminalType {
 			this.registerRxvtKeypad();
 
 			this.registerCursorKeys();
-			break;
-		case VTNT:
-			/**
-			 * @todo Implement.
-			 */
 			break;
 		case VT320:
 			this.registerAnsiFunctionKeys();
@@ -459,6 +468,10 @@ public enum TerminalType {
 			}
 		}
 		return null;
+	}
+
+	public TitleWriter getTitleWriter() {
+		return this.titleWriter;
 	}
 
 	/**

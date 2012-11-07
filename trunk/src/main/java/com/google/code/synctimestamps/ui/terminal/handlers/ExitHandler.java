@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+
 import java.util.List;
 
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
@@ -40,6 +42,28 @@ public final class ExitHandler extends AbstractInputEventHandler {
 		 */
 		for (final InputEvent event : events) {
 			if (event.isControlWith('Q') || event.isControlWith('C')) {
+				/*
+				 * Restore the title.
+				 *
+				 * Setting the title to an empty string
+				 * doesn't work for some terminal emulators
+				 * (particularly, Xterm),
+				 * so consider restoring the original title
+				 * or setting the title to a single space (' ').
+				 */
+				term.setTitle(null);
+
+				/*
+				 * Restore the default colors and text
+				 * attributes before clearing the screen.
+				 */
+				term.setDefaultForeground(null);
+				term.setDefaultBackground(null);
+				term.setTextAttributes(NORMAL);
+
+				term.clear();
+				term.setCursorVisible(true);
+
 				term.close();
 				System.exit(0);
 			}

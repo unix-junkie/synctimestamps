@@ -3,7 +3,12 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -39,26 +44,22 @@ public enum VtKey implements VtKeyOrResponse {
 
 	/**
 	 * The return value of this method can be returned by
-	 * {@link InputEvent#toString()}.
+	 * {@link InputEvent#toString(Terminal)}.
 	 *
-	 * @see Enum#toString()
-	 * @see InputEvent#toString()
+	 * @see InputEvent#toString(Terminal)
+	 * @see VtKeyOrResponse#toString(Terminal)
 	 */
 	@Override
-	public String toString() {
-		final StringBuilder s = new StringBuilder();
+	public void toString(final Terminal term) {
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print('[');
 
-		s.append(ESC).append("[0;1;31m");
-		s.append('[');
+		term.setTextAttributes(WHITE, BLUE, BOLD);
+		term.print(this.name());
 
-		s.append(ESC).append("[1;37;44m");
-		s.append(this.name());
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print(']');
 
-		s.append(ESC).append("[0;1;31m");
-		s.append(']');
-
-		s.append(ESC).append("[0m");
-
-		return s.toString();
+		term.setTextAttributes(NORMAL);
 	}
 }

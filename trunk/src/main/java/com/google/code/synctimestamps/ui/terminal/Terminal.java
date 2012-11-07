@@ -4,18 +4,20 @@
 package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+import static com.google.code.synctimestamps.ui.terminal.TerminalType.safeValueOf;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+import static java.lang.System.getProperty;
+import static java.util.Arrays.asList;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import com.sun.istack.internal.NotNull;
-
-
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -29,16 +31,21 @@ public final class Terminal extends PrintWriter {
 
 	final Thread sequenceTokenizer;
 
+	private Color defaultForeground;
+
+	private Color defaultBackground;
+
 	/**
 	 * @param ttyName
 	 * @param term
 	 * @param handler
 	 * @throws FileNotFoundException
+	 * @throws UnsupportedEncodingException
 	 */
 	protected Terminal(final String ttyName, final String term, final InputEventHandler handler)
-	throws FileNotFoundException {
-		super(ttyName);
-		this.type = TerminalType.safeValueOf(term);
+	throws FileNotFoundException, UnsupportedEncodingException {
+		super(ttyName, getTerminalEncoding(term));
+		this.type = safeValueOf(term);
 		this.in = new FileReader(ttyName);
 		this.sequenceTokenizer = new SequenceTokenizer(this, handler);
 	}
@@ -85,12 +92,12 @@ public final class Terminal extends PrintWriter {
 	}
 
 	public Terminal requestTerminalSize() {
-		this.printEsc().print("[18t");
+		this.printCsi().print("18t");
 		return this;
 	}
 
 	public Terminal requestCursorLocation() {
-		this.printEsc().print("[6n");
+		this.printCsi().print("6n");
 		return this;
 	}
 
@@ -99,7 +106,11 @@ public final class Terminal extends PrintWriter {
 	 * @param y
 	 */
 	public Terminal setCursorLocation(final int x, final int y) {
-		this.printEsc().print('[');
+		if (x <= 0 || y <= 0) {
+			throw new IllegalArgumentException(String.format("[%d; %d]", String.valueOf(x), String.valueOf(y)));
+		}
+
+		this.printCsi();
 		this.print(y);
 		this.print(';');
 		this.print(x);
@@ -124,23 +135,39 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
-	 * @param color
+	 * @param foreground if {@code null}, no foreground color is set.
 	 */
-	public Terminal setForegroundColor(final Color color) {
-		return this.setTextAttributes(color, null);
+	public Terminal setForeground(final Color foreground) {
+		return this.setTextAttributes(foreground, null);
 	}
 
 	/**
-	 * @param color
+	 * @param background if {@code null}, no background color is set.
 	 */
-	public Terminal setBackgroundColor(final Color color) {
-		return this.setTextAttributes(null, color);
+	public Terminal setBackground(final Color background) {
+		return this.setTextAttributes(null, background);
+	}
+
+	/**
+	 * @param defaultForeground
+	 */
+	public Terminal setDefaultForeground(final Color defaultForeground) {
+		this.defaultForeground = defaultForeground;
+		return this.setForeground(defaultForeground);
+	}
+
+	/**
+	 * @param defaultBackground
+	 */
+	public Terminal setDefaultBackground(final Color defaultBackground) {
+		this.defaultBackground = defaultBackground;
+		return this.setBackground(defaultBackground);
 	}
 
 	/**
 	 * @param attributes
 	 */
-	public Terminal setTextAttributes(@NotNull final TextAttribute ... attributes) {
+	public Terminal setTextAttributes(@Nonnull final TextAttribute ... attributes) {
 		return this.setTextAttributes(null, null, attributes);
 	}
 
@@ -151,7 +178,7 @@ public final class Terminal extends PrintWriter {
 	 */
 	public Terminal setTextAttributes(@Nullable final Color foreground,
 			@Nullable final Color background,
-			@NotNull final TextAttribute ... attributes) {
+			@Nonnull final TextAttribute ... attributes) {
 		final StringBuilder s = new StringBuilder();
 
 		/*
@@ -160,6 +187,18 @@ public final class Terminal extends PrintWriter {
 		 */
 		for (final TextAttribute attribute : attributes) {
 			s.append(attribute.ordinal()).append(';');
+			if (attribute == NORMAL) {
+				/*
+				 * Whenever a rest to default attributes (CSI 0 m) is requested,
+				 * also restore the default foreground and background.
+				 */
+				if (this.defaultForeground != null) {
+					s.append(30 + this.defaultForeground.ordinal()).append(';');
+				}
+				if (this.defaultBackground != null) {
+					s.append(40 + this.defaultBackground.ordinal()).append(';');
+				}
+			}
 		}
 		if (foreground != null) {
 			s.append(30 + foreground.ordinal()).append(';');
@@ -172,11 +211,143 @@ public final class Terminal extends PrintWriter {
 		if (length != 0) {
 			s.deleteCharAt(length - 1);
 
-			this.printEsc().print('[');
+			this.printCsi();
 			this.print(s);
 			this.print('m');
 		}
 
 		return this;
+	}
+
+	/**
+	 * @param title
+	 */
+	public void setTitle(@Nullable final String title) {
+		this.type.getTitleWriter().setTitle(this, title);
+	}
+
+	/**
+	 * Prints the <em>Control Sequence Introducer</em> (<em>CSI</em>).
+	 *
+	 * @return This terminal
+	 */
+	Terminal printCsi() {
+		this.printEsc();
+		this.print('[');
+		return this;
+	}
+
+	/**
+	 * Prints the <em>Operating System Command</em> (<em>OSC</em>).
+	 *
+	 * @return This terminal
+	 */
+	Terminal printOsc() {
+		this.printEsc();
+		this.print(']');
+		return this;
+	}
+
+	/**
+	 * @param vtKeyOrResponse
+	 * @return This terminal
+	 */
+	public Terminal print(final VtKeyOrResponse vtKeyOrResponse) {
+		vtKeyOrResponse.toString(this);
+		return this;
+	}
+
+	/**
+	 * @param inputEvent
+	 * @return This terminal
+	 */
+	public Terminal print(final InputEvent inputEvent) {
+		inputEvent.toString(this);
+		return this;
+	}
+
+	public Terminal restoreDefaultForeground() {
+		return this.setForeground(this.defaultForeground);
+	}
+
+	public Terminal restoreDefaultBackground() {
+		return this.setBackground(this.defaultBackground);
+	}
+
+	public Terminal clear() {
+		this.restoreDefaultForeground().restoreDefaultBackground().setCursorLocation(1, 1).eraseInDisplay(EraseInDisplay.ERASE_BELOW).flush();
+		return this;
+	}
+
+	/**
+	 * @param visible
+	 * @return This terminal
+	 */
+	public Terminal setToolbarVisible(final boolean visible) {
+		/*
+		 * DEC Private Mode Set/Reset
+		 */
+		this.printCsi().print('?');
+		this.print(10);
+		this.print(visible ? 'h' : 'l');
+		this.flush();
+		return this;
+	}
+
+	/**
+	 * @param visible
+	 * @return This terminal
+	 */
+	public Terminal setCursorVisible(final boolean visible) {
+		/*
+		 * DEC Private Mode Set/Reset
+		 */
+		this.printCsi().print('?');
+		this.print(25);
+		this.print(visible ? 'h' : 'l');
+		this.flush();
+		return this;
+	}
+
+	/**
+	 * @param visible
+	 * @return This terminal
+	 */
+	public Terminal setScrollbarVisible(final boolean visible) {
+		/*
+		 * DEC Private Mode Set/Reset
+		 */
+		this.printCsi().print('?');
+		this.print(30);
+		this.print(visible ? 'h' : 'l');
+		this.flush();
+		return this;
+	}
+
+	/**
+	 * @param mode
+	 */
+	private Terminal eraseInDisplay(@Nonnull final EraseInDisplay mode) {
+		this.printCsi().printf("%dJ", Integer.valueOf(mode.ordinal()));
+		return this;
+	}
+
+	/**
+	 * @param term
+	 */
+	private static String getTerminalEncoding(final String term) {
+		switch (safeValueOf(term)) {
+		case VTNT:
+			return isLocaleCyrilic() ? "IBM866" : "IBM437";
+		default:
+			return getProperty("file.encoding");
+		}
+
+	}
+
+	private static boolean isLocaleCyrilic() {
+		return asList(getProperty("user.language"),
+				getProperty("user.language.format"),
+				getProperty("user.langage.display")).contains("ru");
 	}
 }
