@@ -65,7 +65,7 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			final ExifReader exifReader = new ExifReader(exifInfo);
 			final Metadata metadata = exifReader.extract();
 			final Directory directory = metadata.getDirectory(ExifDirectory.class);
-			
+
 			/*-
 			 * Certain digital cameras don't add any DateTime tag,
 			 * but still add DateTimeOriginal and/or DateTimeDigitized.
