@@ -55,13 +55,13 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			 */
 			final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
 			for (final TagInfo tagInfo : new TagInfo[]{TIFF_TAG_DATE_TIME, EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE}) {
-				final Date dateTime = getDateTime(file, jpegMetadata, tagInfo);
+				final Date dateTime = this.getDateTime(file, jpegMetadata, tagInfo);
 				if (dateTime == null) {
 					continue;
 				}
 				return dateTime;
 			}
-			
+
 			return null;
 		} catch (final ImageReadException ire) {
 			/*
