@@ -44,10 +44,14 @@ public final class VtCursorLocation extends VtResponse {
 	}
 
 	/**
-	 * @see VtResponse#appendDescription(StringBuilder)
+	 * @see VtResponse#appendDescription(Terminal)
 	 */
 	@Override
-	protected StringBuilder appendDescription(final StringBuilder s) {
-		return s.append("Cursor location: +").append(this.x).append('+').append(this.y);
+	protected Terminal appendDescription(final Terminal term) {
+		term.print("Cursor location: +");
+		term.print(this.x);
+		term.print('+');
+		term.print(this.y);
+		return term;
 	}
 }

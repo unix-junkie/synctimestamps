@@ -8,9 +8,9 @@ package com.google.code.synctimestamps.ui.terminal;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public interface VtKeyOrResponse {
-	/**
-	 * @param term
-	 */
-	void toString(final Terminal term);
+public enum EraseInDisplay {
+	ERASE_BELOW,
+	ERASE_ABOVE,
+	ERASE_ALL,
+	ERASE_SAVED_LINES;
 }

@@ -31,6 +31,7 @@ public final class Echo extends AbstractInputEventHandler {
 	 */
 	@Override
 	public void handle(final Terminal term, final List<InputEvent> events) {
+		term.clear();
 		for (final InputEvent event : events) {
 			term.print(event);
 		}

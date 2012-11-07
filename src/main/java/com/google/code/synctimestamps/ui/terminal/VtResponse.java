@@ -3,7 +3,11 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -12,35 +16,30 @@ import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
  */
 public abstract class VtResponse implements VtKeyOrResponse {
 	/**
-	 * @param s
+	 * @param term
 	 */
-	protected abstract StringBuilder appendDescription(final StringBuilder s);
+	protected abstract Terminal appendDescription(final Terminal term);
 
 	/**
 	 * The return value of this method can be returned by
-	 * {@link InputEvent#toString()}.
+	 * {@link InputEvent#toString(Terminal)}.
 	 *
-	 * @see Object#toString()
-	 * @see InputEvent#toString()
+	 * @see InputEvent#toString(Terminal)
+	 * @see VtKeyOrResponse#toString(Terminal)
 	 */
 	@Override
-	public final String toString() {
-		final StringBuilder s = new StringBuilder();
-
-		s.append(ESC).append("[0;1;31m");
-		s.append('[');
+	public final void toString(final Terminal term) {
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print('[');
 
 		/*
 		 * White on cyan.
 		 */
-		s.append(ESC).append("[1;37;45m");
-		this.appendDescription(s);
+		term.setTextAttributes(WHITE, CYAN, BOLD);
+		this.appendDescription(term);
 
-		s.append(ESC).append("[0;1;31m");
-		s.append(']');
-
-		s.append(ESC).append("[0m");
-
-		return s.toString();
+		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.print(']');
+		term.setTextAttributes(NORMAL);
 	}
 }
