@@ -93,7 +93,9 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 						final VtKeyOrResponse vtKeyOrResponse = type.getVtKeyOrResponse(event);
 						if (vtKeyOrResponse instanceof VtCursorLocation) {
 							final VtCursorLocation cursorLocation0 = (VtCursorLocation) vtKeyOrResponse;
-							it.remove();
+							if (!isDebugMode()) {
+								it.remove();
+							}
 
 							final Point cursorLocation1 = new Point(cursorLocation0);
 

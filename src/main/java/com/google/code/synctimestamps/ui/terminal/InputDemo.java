@@ -5,9 +5,12 @@ package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.Color.BLACK;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
+import static java.lang.Boolean.getBoolean;
 import static java.lang.Runtime.getRuntime;
+import static java.lang.System.exit;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
+import static java.lang.System.setProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,15 +93,15 @@ public abstract class InputDemo {
 
 				term.start();
 			} else {
-				final String javaCommandLine = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + System.getProperty("java.class.path") + "\" "
-						+ (System.getProperty("os.name").equals("Mac OS X")
+				final String javaCommandLine = getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + getProperty("java.class.path") + "\" "
+						+ (getProperty("os.name").equals("Mac OS X")
 								? "-Dfile.encoding=\"`locale charmap`\" " // Apple's Java implementation default is MacRoman
 								: "")
-//						+ "-Dterminal.debug=true "
+						+ "-Dterminal.debug=" + getBoolean("terminal.debug") + " "
 						+ InputDemo.class.getName();
 
-				if (System.getProperty("os.name").equals("Mac OS X")) {
-					System.setProperty("java.io.tmpdir", "/tmp");  // By default, /var/folders/Fv/FvLjTL7NHa06CiaNGkyzpE+++TI/-Tmp-/ is used
+				if (getProperty("os.name").equals("Mac OS X")) {
+					setProperty("java.io.tmpdir", "/tmp");  // By default, /var/folders/Fv/FvLjTL7NHa06CiaNGkyzpE+++TI/-Tmp-/ is used
 				}
 				final File shellScript = File.createTempFile("synctimestamps-" + getProperty("user.name") + '-', ".sh");
 				final PrintWriter out = new PrintWriter(shellScript);
@@ -154,7 +157,7 @@ public abstract class InputDemo {
 				if (returnValue != 0) {
 					System.out.println("Child process exited with code " + returnValue);
 				}
-				System.exit(returnValue);
+				exit(returnValue);
 			}
 		} else {
 			/*
@@ -185,7 +188,7 @@ public abstract class InputDemo {
 			if (returnValue != 0) {
 				System.out.println("Child process exited with code " + returnValue);
 			}
-			System.exit(returnValue);
+			exit(returnValue);
 		}
 	}
 }

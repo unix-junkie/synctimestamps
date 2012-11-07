@@ -67,8 +67,11 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 						 */
 						@Override
 						public void run() {
-							final Dimension terminalSize = handler.getTerminalSize(term);
+							/*
+							 * Clear the screen *before* the debug output is printed.
+							 */
 							term.clear();
+							final Dimension terminalSize = handler.getTerminalSize(term);
 							term.println("Terminal size of " + terminalSize + " reported.");
 							term.flush();
 						}

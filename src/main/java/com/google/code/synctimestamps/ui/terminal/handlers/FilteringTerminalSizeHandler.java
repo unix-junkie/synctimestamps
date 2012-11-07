@@ -106,7 +106,9 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 						final VtKeyOrResponse vtKeyOrResponse = type.getVtKeyOrResponse(event);
 						if (vtKeyOrResponse instanceof VtTerminalSize) {
 							final VtTerminalSize terminalSize0 = (VtTerminalSize) vtKeyOrResponse;
-							it.remove();
+							if (!isDebugMode()) {
+								it.remove();
+							}
 
 							final Dimension terminalSize1 = new Dimension(terminalSize0);
 
