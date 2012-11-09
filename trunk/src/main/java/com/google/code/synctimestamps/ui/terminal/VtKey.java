@@ -6,7 +6,6 @@ package com.google.code.synctimestamps.ui.terminal;
 import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
 import static com.google.code.synctimestamps.ui.terminal.Color.RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
-import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
