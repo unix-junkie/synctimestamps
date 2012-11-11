@@ -100,13 +100,25 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 							final Point cursorLocation1 = new Point(cursorLocation0);
 
 							if (isDebugMode()) {
+								final long t0Snapshot = this.t0;
 								final long t1 = System.currentTimeMillis();
 
-								term.setTextAttributes(RED, WHITE, BOLD);
-								term.print("DEBUG:");
-								term.setTextAttributes(BLACK, WHITE, BOLD);
-								term.println(" Cursor location of " + cursorLocation1 + " reported " + (t1 - this.t0) + " ms after the request.");
-								term.setTextAttributes(NORMAL);
+								assert t0Snapshot != 0L;
+
+								term.invokeLater(new Runnable() {
+									/**
+									 * @see Runnable#run()
+									 */
+									@Override
+									public void run() {
+										term.setTextAttributes(RED, WHITE, BOLD);
+										term.print("DEBUG:");
+										term.setTextAttributes(BLACK, WHITE, BOLD);
+										term.println(" Cursor location of " + cursorLocation1 + " reported " + (t1 - t0Snapshot) + " ms after the request.");
+										term.setTextAttributes(NORMAL);
+										term.flush();
+									}
+								});
 							}
 
 							synchronized (this.cursorLocationLock) {
@@ -214,11 +226,21 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 								 * if multiple events are being collected.
 								 */
 								if (isDebugMode()) {
-									term.setTextAttributes(RED, WHITE, BOLD);
-									term.print("DEBUG:");
-									term.setTextAttributes(BLACK, WHITE, BOLD);
-									term.println(" Timed out waiting for cursor location for " + FilteringCursorLocationHandler.this.expectingTimeoutMillis + " ms.");
-									term.setTextAttributes(NORMAL);
+									term.invokeLater(new Runnable() {
+										/**
+										 * @see Runnable#run()
+										 */
+										@Override
+										public void run() {
+											term.setTextAttributes(RED, WHITE, BOLD);
+											term.print("DEBUG:");
+											term.setTextAttributes(BLACK, WHITE, BOLD);
+											term.println(" Timed out waiting for cursor location for " + FilteringCursorLocationHandler.this.expectingTimeoutMillis + " ms.");
+											term.setTextAttributes(NORMAL);
+											term.flush();
+										}
+
+									});
 								}
 
 								synchronized (FilteringCursorLocationHandler.this.cursorLocationLock) {

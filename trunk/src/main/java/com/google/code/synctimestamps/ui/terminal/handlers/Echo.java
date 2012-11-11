@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static java.lang.Boolean.getBoolean;
+
 import java.util.List;
 
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
@@ -31,12 +33,37 @@ public final class Echo extends AbstractInputEventHandler {
 	 */
 	@Override
 	public void handle(final Terminal term, final List<InputEvent> events) {
-		term.clear();
-		for (final InputEvent event : events) {
-			term.print(event);
-		}
-		term.println();
-		term.flush();
+		term.invokeLater(new Runnable() {
+			/**
+			 * @see Runnable#run()
+			 */
+			@Override
+			public void run() {
+				if (events.isEmpty()) {
+					/*
+					 * Do not clear the screen
+					 * or otherwise mess with the terminal
+					 * if the sequence is empty
+					 * (may happen if certain terminal responses
+					 * have been removed from an initially non-empty sequence).
+					 */
+					return;
+				}
+
+				if (!isDebugMode()) {
+					/*
+					 * In debug mode, don't clear the screen
+					 * as we may miss interesting terminal responses.
+					 */
+					term.clear();
+				}
+				for (final InputEvent event : events) {
+					term.print(event);
+				}
+				term.println();
+				term.flush();
+			}
+		});
 
 		if (this.next != null) {
 			this.next.handle(term, events);
@@ -51,5 +78,12 @@ public final class Echo extends AbstractInputEventHandler {
 		if (this.next != null) {
 			this.next.printUsage(term);
 		}
+	}
+
+	/**
+	 * @return whether debug mode is turned on.
+	 */
+	static boolean isDebugMode() {
+		return getBoolean("terminal.debug");
 	}
 }

@@ -81,23 +81,31 @@ public abstract class InputDemo {
 				 */
 				final String ttyName = args[0];
 				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler().append(new TerminalSizeHandler()).append(new LineDrawingHandler()).append(new Echo()));
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.setTitle(WINDOW_TITLE);
+						term.setToolbarVisible(false);
+						term.setCursorVisible(false);
+						term.setScrollbarVisible(false);
 
-				term.setTitle(WINDOW_TITLE);
-				term.setToolbarVisible(false);
-				term.setCursorVisible(false);
-				term.setScrollbarVisible(false);
+						term.setDefaultForeground(WHITE);
+						term.setDefaultBackground(BLACK);
+						term.clear();
 
-				term.setDefaultForeground(WHITE);
-				term.setDefaultBackground(BLACK);
-				term.clear();
-
-				term.start();
+						term.start();
+					}
+				});
 			} else {
+				final boolean debugMode = getBoolean("terminal.debug");
 				final String javaCommandLine = getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + getProperty("java.class.path") + "\" "
 						+ (getProperty("os.name").equals("Mac OS X")
 								? "-Dfile.encoding=\"`locale charmap`\" " // Apple's Java implementation default is MacRoman
 								: "")
-						+ "-Dterminal.debug=" + getBoolean("terminal.debug") + " "
+						+ "-Dterminal.debug=" + debugMode + " "
 						+ InputDemo.class.getName();
 
 				if (getProperty("os.name").equals("Mac OS X")) {
@@ -139,8 +147,10 @@ public abstract class InputDemo {
 				out.println('\t' + javaCommandLine + " ${tty}");
 				out.println("\treturnValue=$?");
 				out.println("\tstty sane 2>/dev/null");
-				out.println("\t#echo \"Exiting with code ${returnValue}...\"");
-				out.println("\t#read dummy");
+				if (debugMode) {
+					out.println("\techo \"Exiting with code ${returnValue}...\"");
+					out.println("\tread dummy");
+				}
 				out.println("\texit ${returnValue}");
 				out.println("fi");
 				out.flush();

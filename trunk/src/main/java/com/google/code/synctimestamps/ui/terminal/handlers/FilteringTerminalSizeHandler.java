@@ -11,11 +11,11 @@ import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
 import static java.lang.Boolean.getBoolean;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
@@ -56,7 +56,19 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 
 	final long expectingTimeoutMillis;
 
-	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	/**
+	 * The background thread this executor is backed by is used to
+	 * schedule the "response timeout" event which will fire after the
+	 * thread which entered {@link #getTerminalSize(Terminal)} and sent
+	 * a terminal size request via {@link Terminal#requestTerminalSize()}
+	 * has been waiting for {@link #expectingTimeoutMillis} ms.
+	 *
+	 * @see #expectingTimeoutMillis
+	 * @see #DEFAULT_EXPECTING_TIMEOUT_MILLIS
+	 * @see #getTerminalSize(Terminal)
+	 * @see Terminal#requestTerminalSize()
+	 */
+	private final ScheduledExecutorService executor = newScheduledThreadPool(1);
 
 	Dimension terminalSize;
 
@@ -113,13 +125,24 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 							final Dimension terminalSize1 = new Dimension(terminalSize0);
 
 							if (isDebugMode()) {
+								final long t0Snapshot = FilteringTerminalSizeHandler.this.t0;
 								final long t1 = System.currentTimeMillis();
+								assert t0Snapshot != 0L;
 
-								term.setTextAttributes(RED, WHITE, BOLD);
-								term.print("DEBUG:");
-								term.setTextAttributes(BLACK, WHITE, BOLD);
-								term.println(" Terminal size of " + terminalSize1 + " reported " + (t1 - this.t0) + " ms after the request.");
-								term.setTextAttributes(NORMAL);
+								term.invokeLater(new Runnable() {
+									/**
+									 * @see Runnable#run()
+									 */
+									@Override
+									public void run() {
+										term.setTextAttributes(RED, WHITE, BOLD);
+										term.print("DEBUG:");
+										term.setTextAttributes(BLACK, WHITE, BOLD);
+										term.println(" Terminal size of " + terminalSize1 + " reported " + (t1 - t0Snapshot) + " ms after the request.");
+										term.setTextAttributes(NORMAL);
+										term.flush();
+									}
+								});
 							}
 
 							synchronized (this.terminalSizeLock) {
@@ -233,11 +256,20 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 								 * if multiple events are being collected.
 								 */
 								if (isDebugMode()) {
-									term.setTextAttributes(RED, WHITE, BOLD);
-									term.print("DEBUG:");
-									term.setTextAttributes(BLACK, WHITE, BOLD);
-									term.println(" Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
-									term.setTextAttributes(NORMAL);
+									term.invokeLater(new Runnable() {
+										/**
+										 * @see Runnable#run()
+										 */
+										@Override
+										public void run() {
+											term.setTextAttributes(RED, WHITE, BOLD);
+											term.print("DEBUG:");
+											term.setTextAttributes(BLACK, WHITE, BOLD);
+											term.println(" Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
+											term.setTextAttributes(NORMAL);
+											term.flush();
+										}
+									});
 								}
 
 								synchronized (FilteringTerminalSizeHandler.this.terminalSizeLock) {
