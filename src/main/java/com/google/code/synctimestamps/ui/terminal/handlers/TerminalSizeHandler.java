@@ -4,10 +4,9 @@
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
 import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
+import static java.lang.Boolean.getBoolean;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
@@ -23,8 +22,6 @@ import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
  */
 public final class TerminalSizeHandler extends AbstractInputEventHandler {
 	private boolean nextIsFiltering;
-
-	private final ExecutorService background = Executors.newSingleThreadExecutor();
 
 	public TerminalSizeHandler() {
 		this(new FilteringTerminalSizeHandler());
@@ -61,17 +58,29 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 					final TerminalSizeProvider handler = this.next instanceof TerminalSizeProvider
 							? (TerminalSizeProvider) this.next
 							: asTerminalSizeProvider((CursorLocationProvider) this.next);
-					this.background.submit(new Runnable() {
+					term.invokeLater(new Runnable() {
 						/**
 						 * @see Runnable#run()
 						 */
 						@Override
 						public void run() {
-							/*
-							 * Clear the screen *before* the debug output is printed.
-							 */
-							term.clear();
-							final Dimension terminalSize = handler.getTerminalSize(term);
+							final Dimension terminalSize;
+							if (isDebugMode()) {
+								/*
+								 * In debug mode, clear the screen *before*
+								 * the debug output is printed.
+								 */
+								term.clear();
+								terminalSize = handler.getTerminalSize(term);
+							} else {
+								terminalSize = handler.getTerminalSize(term);
+								/*
+								 * Clear the screen *after*
+								 * it has potentially been messed with.
+								 */
+								term.clear();
+							}
+
 							term.println("Terminal size of " + terminalSize + " reported.");
 							term.flush();
 						}
@@ -98,5 +107,12 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 		if (this.next != null) {
 			this.next.printUsage(term);
 		}
+	}
+
+	/**
+	 * @return whether debug mode is turned on.
+	 */
+	static boolean isDebugMode() {
+		return getBoolean("terminal.debug");
 	}
 }

@@ -47,8 +47,16 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 
 		for (final InputEvent event : events) {
 			if (event.isControlWith('D')) {
-				term.clear();
-				lineDrawingCharsDemo(term);
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingCharsDemo(term);
+					}
+				});
 			}
 		}
 	}
@@ -118,7 +126,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param term
 	 * @see <a href = "http://www.in-ulm.de/~mascheck/various/alternate_charset/">http://www.in-ulm.de/~mascheck/various/alternate_charset/</a>
 	 */
-	private static void lineDrawingCharsDemo(final Terminal term) {
+	static void lineDrawingCharsDemo(final Terminal term) {
 		term.setTextAttributes(YELLOW, BLUE, BOLD);
 		term.println("Unicode line-drawing characters:");
 

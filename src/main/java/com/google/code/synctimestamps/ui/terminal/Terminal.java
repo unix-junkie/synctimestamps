@@ -7,7 +7,9 @@ import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.TerminalType.safeValueOf;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.System.getProperty;
+import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,6 +38,31 @@ public final class Terminal extends PrintWriter {
 	private Color defaultForeground;
 
 	private Color defaultBackground;
+
+	private final EventQueueFactory eventQueueFactory = new EventQueueFactory();
+
+	/**
+	 * The background thread this executor is backed by is used for
+	 * all terminal output (i.&nbsp;e. to schedule a terminal size request,
+	 * print the terminal response, etc.).
+	 */
+	private final ExecutorService eventQueue = newSingleThreadExecutor(this.eventQueueFactory);
+
+	{
+		/*
+		 * Submit an empty task in order to force the event queue
+		 * to start.
+		 */
+		this.eventQueue.submit(new Runnable() {
+			/**
+			 * @see Runnable#run()
+			 */
+			@Override
+			public void run() {
+				// empty
+			}
+		});
+	}
 
 	/**
 	 * @param ttyName
@@ -59,6 +88,64 @@ public final class Terminal extends PrintWriter {
 	 */
 	public int read() throws IOException {
 		return this.in.read();
+	}
+
+	/**
+	 * @param doRun
+	 * @see javax.swing.SwingUtilities#invokeLater(Runnable)
+	 */
+	public void invokeLater(@Nonnull final Runnable doRun) {
+		if (doRun == null) {
+			throw new IllegalArgumentException();
+		}
+
+		this.eventQueue.submit(doRun);
+	}
+
+	private boolean isEventQueue() {
+		return this.eventQueueFactory.isEventQueue();
+	}
+
+	private void checkIfEventQueue() {
+		if (!this.isEventQueue()) {
+			throw new IllegalStateException("Thread " + currentThread().getName() + " is not an event queue");
+		}
+	}
+
+	/**
+	 * @see PrintWriter#println()
+	 */
+	@Override
+	public void println() {
+		this.checkIfEventQueue();
+		super.println();
+	}
+
+	/**
+	 * @see PrintWriter#write(int)
+	 */
+	@Override
+	public void write(final int c) {
+		this.checkIfEventQueue();
+		super.write(c);
+	}
+
+	/**
+	 * @see PrintWriter#write(char[], int, int)
+	 */
+	@Override
+	public void write(final char[] buf, final int off, final int len) {
+		this.checkIfEventQueue();
+		super.write(buf, off, len);
+	}
+
+	/**
+	 * @see PrintWriter#write(String, int, int)
+	 */
+	@Override
+	public void write(final String s, final int off, final int len) {
+		this.checkIfEventQueue();
+		super.write(s, off, len);
 	}
 
 	/**
@@ -222,8 +309,9 @@ public final class Terminal extends PrintWriter {
 	/**
 	 * @param title
 	 */
-	public void setTitle(@Nullable final String title) {
+	public Terminal setTitle(@Nullable final String title) {
 		this.type.getTitleWriter().setTitle(this, title);
+		return this;
 	}
 
 	/**
@@ -291,6 +379,7 @@ public final class Terminal extends PrintWriter {
 		this.print(10);
 		this.print(visible ? 'h' : 'l');
 		this.flush();
+
 		return this;
 	}
 
@@ -306,6 +395,7 @@ public final class Terminal extends PrintWriter {
 		this.print(25);
 		this.print(visible ? 'h' : 'l');
 		this.flush();
+
 		return this;
 	}
 
@@ -321,6 +411,7 @@ public final class Terminal extends PrintWriter {
 		this.print(30);
 		this.print(visible ? 'h' : 'l');
 		this.flush();
+
 		return this;
 	}
 
@@ -349,5 +440,42 @@ public final class Terminal extends PrintWriter {
 		return asList(getProperty("user.language"),
 				getProperty("user.language.format"),
 				getProperty("user.langage.display")).contains("ru");
+	}
+
+	/**
+	 * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+	 * @author $Author$
+	 * @version $Revision$, $Date$
+	 */
+	private static final class EventQueueFactory implements ThreadFactory {
+		private Thread eventQueue;
+
+		private final Object lock = new Object();
+
+		EventQueueFactory() {
+			// empty
+		}
+
+		/**
+		 * @see ThreadFactory#newThread(Runnable)
+		 */
+		@Override
+		public Thread newThread(final Runnable r) {
+			synchronized (this.lock) {
+				return this.eventQueue == null
+						? this.eventQueue = new Thread(r, "EventQueue")
+						: this.eventQueue;
+			}
+		}
+
+		public boolean isEventQueue() {
+			synchronized (this.lock) {
+				if (this.eventQueue == null) {
+					throw new IllegalStateException("Event queue is not yet runnable");
+				}
+
+				return currentThread() == this.eventQueue;
+			}
+		}
 	}
 }
