@@ -81,6 +81,14 @@ public final class QuietTerminalSizeHandler extends AbstractInputEventHandler {
 		final TerminalSizeProvider handler = this.next instanceof TerminalSizeProvider
 				? (TerminalSizeProvider) this.next
 				: asTerminalSizeProvider((CursorLocationProvider) this.next);
+
+		/*
+		 * Don't enqueue the request if already in the event queue.
+		 */
+		if (term.isEventQueue()) {
+			return handler.getTerminalSize(term);
+		}
+
 		try {
 			return term.invokeLater(new Callable<Dimension>() {
 				/**
