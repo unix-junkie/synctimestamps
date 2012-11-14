@@ -17,11 +17,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.google.code.synctimestamps.ui.terminal.handlers.QuietTerminalSizeHandler;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -64,6 +68,8 @@ public final class Terminal extends PrintWriter {
 		});
 	}
 
+	private final QuietTerminalSizeHandler sizeHandler;
+
 	/**
 	 * @param ttyName
 	 * @param term
@@ -76,7 +82,16 @@ public final class Terminal extends PrintWriter {
 		super(ttyName, getTerminalEncoding(term));
 		this.type = safeValueOf(term);
 		this.in = new FileReader(ttyName);
-		this.sequenceTokenizer = new SequenceTokenizer(this, handler);
+
+		final QuietTerminalSizeHandler probablySizeHandler = findSizeHandler(handler);
+		final InputEventHandler rootHandler = probablySizeHandler == null
+				? new QuietTerminalSizeHandler().append(handler)
+				: handler;
+		this.sizeHandler = probablySizeHandler == null
+				? (QuietTerminalSizeHandler) rootHandler
+				: probablySizeHandler;
+
+		this.sequenceTokenizer = new SequenceTokenizer(this, rootHandler);
 	}
 
 	public void start() {
@@ -91,18 +106,31 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
-	 * @param doRun
+	 * @param task
 	 * @see javax.swing.SwingUtilities#invokeLater(Runnable)
 	 */
-	public void invokeLater(@Nonnull final Runnable doRun) {
-		if (doRun == null) {
+	public void invokeLater(@Nonnull final Runnable task) {
+		if (task == null) {
 			throw new IllegalArgumentException();
 		}
 
-		this.eventQueue.submit(doRun);
+		this.eventQueue.submit(task);
 	}
 
-	private boolean isEventQueue() {
+	/**
+	 * @param <T>
+	 * @param task
+	 * @see javax.swing.SwingUtilities#invokeLater(Runnable)
+	 */
+	public <T> Future<T> invokeLater(@Nonnull final Callable<T> task) {
+		if (task == null) {
+			throw new IllegalArgumentException();
+		}
+
+		return this.eventQueue.submit(task);
+	}
+
+	public boolean isEventQueue() {
 		return this.eventQueueFactory.isEventQueue();
 	}
 
@@ -152,7 +180,7 @@ public final class Terminal extends PrintWriter {
 	 * @see PrintWriter#close()
 	 */
 	@Override
-	public final void close() {
+	public void close() {
 		/*
 		 * The reading while-loop should be modified
 		 * before enabling this.
@@ -416,6 +444,23 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
+	 * Can be invoked from any thread except for {@linkplain
+	 * SequenceConsumer#isDispatchThread() SequenceConsumer Dispatch Thread}.
+	 *
+	 * @return this terminal's size
+	 * @throws IllegalStateException if invoked from {@linkplain
+	 *         SequenceConsumer#isDispatchThread() SequenceConsumer Dispatch Thread}
+	 * @see SequenceConsumer#isDispatchThread()
+	 */
+	public Dimension getSize() {
+		return this.sizeHandler.getTerminalSize(this);
+	}
+
+	public Dimension getDefaultSize() {
+		return this.type.getDefaultSize();
+	}
+
+	/**
 	 * @param mode
 	 */
 	private Terminal eraseInDisplay(@Nonnull final EraseInDisplay mode) {
@@ -440,6 +485,23 @@ public final class Terminal extends PrintWriter {
 		return asList(getProperty("user.language"),
 				getProperty("user.language.format"),
 				getProperty("user.langage.display")).contains("ru");
+	}
+
+	/**
+	 * @param initial
+	 */
+	private static QuietTerminalSizeHandler findSizeHandler(final InputEventHandler initial) {
+		if (initial == null) {
+			return null;
+		}
+
+		for (final InputEventHandler handler : initial) {
+			if (handler instanceof QuietTerminalSizeHandler) {
+				return (QuietTerminalSizeHandler) handler;
+			}
+		}
+
+		return null;
 	}
 
 	/**
