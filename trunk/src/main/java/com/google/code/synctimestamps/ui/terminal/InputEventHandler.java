@@ -10,7 +10,7 @@ import java.util.List;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public interface InputEventHandler {
+public interface InputEventHandler extends Iterable<InputEventHandler> {
 	/**
 	 * @param term
 	 * @param events
@@ -24,6 +24,7 @@ public interface InputEventHandler {
 
 	/**
 	 * @param next
+	 * @return this input event handler
 	 */
 	InputEventHandler append(final InputEventHandler next);
 }

@@ -3,6 +3,11 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import javax.annotation.Nullable;
+
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 
 /**
@@ -16,16 +21,28 @@ abstract class AbstractInputEventHandler implements InputEventHandler {
 	/**
 	 * @param next
 	 */
-	AbstractInputEventHandler(final InputEventHandler next) {
+	AbstractInputEventHandler(@Nullable final InputEventHandler next) {
 		this.setNext(next);
 	}
 
 	/**
 	 * @param next
 	 */
-	void setNext(final InputEventHandler next) {
+	void setNext(@Nullable final InputEventHandler next) {
 		if (this.next != null && this.next != next) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Next handler already set");
+		}
+		if (next == this) {
+			throw new IllegalArgumentException("Circular chaining not allowed");
+		}
+		if (next != null) {
+			for (final InputEventHandler handler : next) {
+				final String className0 = this.getClass().getName();
+				final String className1 = handler.getClass().getName();
+				if (className0.equals(className1)) {
+					throw new IllegalArgumentException(className0 + " is already present in the chain");
+				}
+			}
 		}
 		this.next = next;
 	}
@@ -34,14 +51,7 @@ abstract class AbstractInputEventHandler implements InputEventHandler {
 	 * @see InputEventHandler#append(InputEventHandler)
 	 */
 	@Override
-	public final InputEventHandler append(final InputEventHandler next0) {
-		/*
-		 * We need to return a non-null instance, hence the check.
-		 */
-		if (next0 == null) {
-			throw new IllegalArgumentException();
-		}
-
+	public final InputEventHandler append(@Nullable final InputEventHandler next0) {
 		if (this.next == null) {
 			this.setNext(next0);
 		} else {
@@ -49,5 +59,67 @@ abstract class AbstractInputEventHandler implements InputEventHandler {
 		}
 
 		return this;
+	}
+
+	/**
+	 * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+	 * @author $Author$
+	 * @version $Revision$, $Date$
+	 */
+	private static final class HandlerIterator implements Iterator<InputEventHandler> {
+		private AbstractInputEventHandler current;
+
+		/**
+		 * @param initial
+		 */
+		HandlerIterator(final AbstractInputEventHandler initial) {
+			if (initial == null) {
+				throw new IllegalArgumentException();
+			}
+
+			this.current = initial;
+		}
+
+		/**
+		 * @see Iterator#hasNext()
+		 */
+		@Override
+		public boolean hasNext() {
+			return this.current != null;
+		}
+
+		/**
+		 * @see Iterator#next()
+		 */
+		@Override
+		public InputEventHandler next() {
+			if (!this.hasNext()) {
+				throw new NoSuchElementException();
+			}
+
+			try {
+				return this.current;
+			} finally {
+				this.current = this.current.next instanceof AbstractInputEventHandler
+						? (AbstractInputEventHandler) this.current.next
+						: null;
+			}
+		}
+
+		/**
+		 * @see Iterator#remove()
+		 */
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	/**
+	 * @see Iterable#iterator()
+	 */
+	@Override
+	public final Iterator<InputEventHandler> iterator() {
+		return new HandlerIterator(this);
 	}
 }
