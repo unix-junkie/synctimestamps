@@ -14,6 +14,7 @@ import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
+import com.google.code.synctimestamps.ui.terminal.SequenceConsumer;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
 
@@ -69,6 +70,10 @@ public final class QuietTerminalSizeHandler extends AbstractInputEventHandler {
 	 * @param term
 	 */
 	public Dimension getTerminalSize(final Terminal term) {
+		if (SequenceConsumer.isDispatchThread()) {
+			throw new IllegalStateException("Shouldn't be called from SequenceConsumer dispatch thread");
+		}
+
 		if (!this.nextIsFiltering) {
 			return UNDEFINED;
 		}
