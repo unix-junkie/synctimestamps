@@ -3,17 +3,14 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
-import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
 import static java.lang.Boolean.getBoolean;
 
 import java.util.List;
 
-import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
-import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -21,10 +18,8 @@ import com.google.code.synctimestamps.ui.terminal.TerminalSizeProvider;
  * @version $Revision$, $Date$
  */
 public final class TerminalSizeHandler extends AbstractInputEventHandler {
-	private boolean nextIsFiltering;
-
 	public TerminalSizeHandler() {
-		this(new FilteringTerminalSizeHandler());
+		this(null);
 	}
 
 	/**
@@ -32,15 +27,6 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 	 */
 	public TerminalSizeHandler(final InputEventHandler next) {
 		super(next);
-	}
-
-	/**
-	 * @see AbstractInputEventHandler#setNext(InputEventHandler)
-	 */
-	@Override
-	void setNext(final InputEventHandler next) {
-		super.setNext(next);
-		this.nextIsFiltering = next instanceof TerminalSizeProvider || next instanceof CursorLocationProvider;
 	}
 
 	/**
@@ -54,44 +40,33 @@ public final class TerminalSizeHandler extends AbstractInputEventHandler {
 
 		for (final InputEvent event : events) {
 			if (event.isControlWith('L')) {
-				if (this.nextIsFiltering) {
-					final TerminalSizeProvider handler = this.next instanceof TerminalSizeProvider
-							? (TerminalSizeProvider) this.next
-							: asTerminalSizeProvider((CursorLocationProvider) this.next);
-					term.invokeLater(new Runnable() {
-						/**
-						 * @see Runnable#run()
-						 */
-						@Override
-						public void run() {
-							final Dimension terminalSize;
-							if (isDebugMode()) {
-								/*
-								 * In debug mode, clear the screen *before*
-								 * the debug output is printed.
-								 */
-								term.clear();
-								terminalSize = handler.getTerminalSize(term);
-							} else {
-								terminalSize = handler.getTerminalSize(term);
-								/*
-								 * Clear the screen *after*
-								 * it has potentially been messed with.
-								 */
-								term.clear();
-							}
-
-							term.println("Terminal size of " + terminalSize + " reported.");
-							term.flush();
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						final Dimension terminalSize;
+						if (isDebugMode()) {
+							/*
+							 * In debug mode, clear the screen *before*
+							 * the debug output is printed.
+							 */
+							term.clear();
+							terminalSize = term.getSize();
+						} else {
+							terminalSize = term.getSize();
+							/*
+							 * Clear the screen *after*
+							 * it has potentially been messed with.
+							 */
+							term.clear();
 						}
 
-					});
-				} else {
-					term.requestTerminalSize();
-					term.setCursorLocation(999, 999).requestCursorLocation();
-					term.println();
-					term.flush();
-				}
+						term.println("Terminal size of " + terminalSize + " reported; default is " + term.getDefaultSize() + '.');
+						term.flush();
+					}
+				});
 			}
 		}
 	}
