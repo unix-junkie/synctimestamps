@@ -186,7 +186,7 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 	@Override
 	public Dimension getTerminalSize(final Terminal term) {
 		if (SequenceConsumer.isDispatchThread()) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Shouldn't be called from SequenceConsumer dispatch thread");
 		}
 
 		final Dimension lastTerminalSize;

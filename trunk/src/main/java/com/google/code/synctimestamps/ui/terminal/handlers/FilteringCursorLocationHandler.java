@@ -10,11 +10,11 @@ import static com.google.code.synctimestamps.ui.terminal.Point.UNDEFINED;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.Boolean.getBoolean;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.code.synctimestamps.ui.terminal.CursorLocationProvider;
@@ -52,7 +52,7 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 
 	final long expectingTimeoutMillis;
 
-	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor = newScheduledThreadPool(1);
 
 	Point cursorLocation;
 
@@ -162,7 +162,7 @@ public final class FilteringCursorLocationHandler extends AbstractInputEventHand
 	@Override
 	public Point getCursorLocation(final Terminal term) {
 		if (SequenceConsumer.isDispatchThread()) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Shouldn't be called from SequenceConsumer dispatch thread");
 		}
 
 		synchronized (this.cursorLocationLock) {
