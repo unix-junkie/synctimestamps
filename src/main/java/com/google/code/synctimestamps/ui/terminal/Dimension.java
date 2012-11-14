@@ -11,6 +11,13 @@ package com.google.code.synctimestamps.ui.terminal;
 public final class Dimension {
 	public static final Dimension UNDEFINED = new Dimension(-1, -1);
 
+	public static final Dimension _80X24 = new Dimension(80, 24);
+
+	public static final Dimension _80X25 = new Dimension(80, 25);
+
+	public static final Dimension DEFAULT = _80X24;
+
+
 	private final int width;
 
 	private final int height;
