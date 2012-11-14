@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Dimension._80X24;
+import static com.google.code.synctimestamps.ui.terminal.Dimension._80X25;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.TitleWriter.NONE;
 import static com.google.code.synctimestamps.ui.terminal.TitleWriter.OLD_STYLE;
@@ -61,9 +63,25 @@ public enum TerminalType {
 	VT52("vt52", NONE),
 	VT100("vt100", NONE),
 	VT320("vt320", NONE),
-	VTNT("vtnt", NONE),
+	VTNT("vtnt", NONE) {
+		/**
+		 * @see TerminalType#getDefaultSize()
+		 */
+		@Override
+		public Dimension getDefaultSize() {
+			return _80X25;
+		}
+	},
 	XTERM("xterm"),
-	CYGWIN("cygwin", OLD_STYLE),
+	CYGWIN("cygwin", OLD_STYLE) {
+		/**
+		 * @see TerminalType#getDefaultSize()
+		 */
+		@Override
+		public Dimension getDefaultSize() {
+			return _80X25;
+		}
+	},
 	;
 
 	static {
@@ -472,6 +490,14 @@ public enum TerminalType {
 
 	public TitleWriter getTitleWriter() {
 		return this.titleWriter;
+	}
+
+	/**
+	 * @return the default size for this terminal type (useful in case
+	 *         an attempt to determine one programmatically failed)
+	 */
+	public Dimension getDefaultSize() {
+		return _80X24;
 	}
 
 	/**
