@@ -54,7 +54,62 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 					@Override
 					public void run() {
 						term.clear();
-						lineDrawingCharsDemo(term);
+						lineDrawingUnicode(term);
+					}
+				});
+			} else if (event.isControlWith('F')) {
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingVt100(term);
+					}
+				});
+			} else if (event.isControlWith('G')) {
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingSunColor(term);
+					}
+				});
+			} else if (event.isControlWith('H')) {
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingCp437(term);
+					}
+				});
+			} else if (event.isControlWith('J')) {
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingCp866(term);
+					}
+				});
+			} else if (event.isControlWith('K')) {
+				term.invokeLater(new Runnable() {
+					/**
+					 * @see Runnable#run()
+					 */
+					@Override
+					public void run() {
+						term.clear();
+						lineDrawingKoi8r(term);
 					}
 				});
 			}
@@ -66,7 +121,12 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 */
 	@Override
 	public void printUsage(final Terminal term) {
-		term.println("Type ^D for line-drawing characters demo.");
+		term.println("Type ^D for Unicode line-drawing characters demo.");
+		term.println("Type ^F for VT100 line-drawing characters demo.");
+		term.println("Type ^G for sun-color line-drawing characters demo.");
+		term.println("Type ^H for CP437 line-drawing characters demo.");
+		term.println("Type ^J for CP866 line-drawing characters demo.");
+		term.println("Type ^K for KOI8-R line-drawing characters demo.");
 		term.flush();
 
 		if (this.next != null) {
@@ -108,6 +168,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 		return s1.append(s0);
 	}
 
+
 	/**
 	 * <p>
 	 * In order to see line-drawing characters when logging in to a UNIX
@@ -118,15 +179,9 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * </pre>
 	 * </p>
 	 *
-	 * <p>Solaris console (<tt>sun-color</tt>) doesn't support
-	 * VT100 alternate character set, but has 11 single-line
-	 * characters with codes 90..9A. The rest of the characters
-	 * are distributed according to ISO8859-1</p>
-	 *
 	 * @param term
-	 * @see <a href = "http://www.in-ulm.de/~mascheck/various/alternate_charset/">http://www.in-ulm.de/~mascheck/various/alternate_charset/</a>
 	 */
-	static void lineDrawingCharsDemo(final Terminal term) {
+	static void lineDrawingUnicode(final Terminal term) {
 		term.setTextAttributes(YELLOW, BLUE, BOLD);
 		term.println("Unicode line-drawing characters:");
 
@@ -139,6 +194,15 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 			i += 0x10;
 		}
 
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
+	 * @param term
+	 * @see <a href = "http://www.in-ulm.de/~mascheck/various/alternate_charset/">http://www.in-ulm.de/~mascheck/various/alternate_charset/</a>
+	 */
+	static void lineDrawingVt100(final Terminal term) {
 		term.setTextAttributes(YELLOW, BLUE, BOLD);
 		term.println("VT100 alternate character set:");
 
@@ -153,8 +217,63 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 		}
 		term.stopAlternateCs();
 
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
+	 * <p>Solaris console (<tt>sun-color</tt>) doesn't support
+	 * VT100 alternate character set, but has 11 single-line
+	 * characters with codes 90..9A. The rest of the characters
+	 * are distributed according to ISO8859-1</p>
+	 *
+	 * @param term
+	 */
+	static void lineDrawingSunColor(final Terminal term) {
+		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.println("sun-color line-drawing characters:");
+
+		term.setTextAttributes(CYAN, BLUE, NORMAL);
+		try {
+			final byte bytes[] = new byte[0x9A - 0x90 + 1];
+			for (int i = 0; i < bytes.length; i++) {
+				bytes[i] = (byte) (0x90 + i);
+			}
+			final String s = new String(bytes, "ISO8859-1");
+
+			term.println(s);
+		} catch (final UnsupportedEncodingException uoe) {
+			uoe.printStackTrace(term);
+		}
+
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
+	 * @param term
+	 */
+	static void lineDrawingCp437(final Terminal term) {
 		dumpCodepage(term, "CP437");
+
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
+	 * @param term
+	 */
+	static void lineDrawingCp866(final Terminal term) {
 		dumpCodepage(term, "CP866");
+
+		term.setTextAttributes(NORMAL);
+		term.flush();
+	}
+
+	/**
+	 * @param term
+	 */
+	static void lineDrawingKoi8r(final Terminal term) {
 		dumpCodepage(term, "KOI8-R");
 
 		term.setTextAttributes(NORMAL);
