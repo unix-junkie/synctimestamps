@@ -111,9 +111,6 @@ public final class InputEvent implements CharSequence {
 		return this.isControlCharacter() && '@' + this.data[0] == c;
 	}
 
-	/**
-	 * @param data
-	 */
 	public boolean isEscapeSequence() {
 		return this.data.length > 1 && this.data[0] == ESC;
 	}
