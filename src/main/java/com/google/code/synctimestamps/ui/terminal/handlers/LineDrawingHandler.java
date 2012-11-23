@@ -135,19 +135,49 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	}
 
 	/**
+	 * @param length
+	 * @return a string of length <em>n</em> filled with spaces.
+	 */
+	private static String emptyString(final int length) {
+		final char cs[] = new char[length];
+		for (int i = 0; i < length; i++) {
+			cs[i] = ' ';
+		}
+		return String.valueOf(cs);
+	}
+
+	/**
 	 * @param charsetName
 	 * @return the full contents of an 8-bit codepage.
 	 */
 	private static String getEightBitContents(final String charsetName) {
-		final byte bytes[] = new byte[256];
-		for (int i = 0; i < bytes.length; i++) {
+		final int length = 256;
+		final byte bytes[] = new byte[length];
+		for (int i = 0; i < length; i++) {
 			bytes[i] = (byte) i;
 		}
 
 		try {
 			return new String(bytes, charsetName);
 		} catch (final UnsupportedEncodingException uee) {
-			return "";
+			return emptyString(length);
+		}
+	}
+
+	private static String getSunColorContents() {
+		final int firstIndex = 0x90;
+		final int lastIndex = 0x9A;
+
+		final int length = lastIndex - firstIndex + 1;
+		final byte bytes[] = new byte[length];
+		for (int i = 0; i < length; i++) {
+			bytes[i] = (byte) (firstIndex + i);
+		}
+
+		try {
+			return new String(bytes, "ISO8859-1");
+		} catch (final UnsupportedEncodingException uee) {
+			return emptyString(length);
 		}
 	}
 
@@ -234,17 +264,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 		term.println("sun-color line-drawing characters:");
 
 		term.setTextAttributes(CYAN, BLUE, NORMAL);
-		try {
-			final byte bytes[] = new byte[0x9A - 0x90 + 1];
-			for (int i = 0; i < bytes.length; i++) {
-				bytes[i] = (byte) (0x90 + i);
-			}
-			final String s = new String(bytes, "ISO8859-1");
-
-			term.println(s);
-		} catch (final UnsupportedEncodingException uoe) {
-			uoe.printStackTrace(term);
-		}
+		term.println(getSunColorContents());
 
 		term.setTextAttributes(NORMAL);
 		term.flush();
@@ -288,7 +308,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 		term.setTextAttributes(YELLOW, BLUE, BOLD);
 		term.println(charsetName + " line-drawing characters:");
 
-		final String cp437 = getEightBitContents(charsetName);
+		final String chars = getEightBitContents(charsetName);
 		for (int i = 0x00; i <= 0xf0; ) {
 			term.setTextAttributes(GREEN, BLUE, BOLD);
 			term.print(toHexString(i, 2, true));
@@ -297,15 +317,15 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 				if (j != 0) {
 					term.print("    ");
 				}
-				term.print(cp437.charAt(i + j));
+				term.print(chars.charAt(i + j));
 			}
 			term.println();
 
 			for (int j = 0x0; j <= 0xf; j++) {
-				final boolean emphasize = cp437.charAt(i + j) > 0xff;
+				final boolean emphasize = chars.charAt(i + j) > 0xff;
 				term.setTextAttributes(emphasize ? RED : WHITE, BLUE, emphasize ? BOLD : NORMAL);
 				term.print(' ');
-				term.print(toHexString(cp437.charAt(i + j), 4, false));
+				term.print(toHexString(chars.charAt(i + j), 4, false));
 			}
 			term.println();
 			i += 0x10;
