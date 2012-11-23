@@ -51,15 +51,39 @@ public enum TerminalType {
 	 * SunOS rxvt reports TERM=kterm.
 	 */
 	KTERM("kterm", OLD_STYLE),
-	LINUX("linux", NONE),
+	LINUX("linux", NONE) {
+		/**
+		 * @see TerminalType#getDefaultSize()
+		 */
+		@Override
+		public Dimension getDefaultSize() {
+			return _80X25;
+		}
+	},
 	RXVT("rxvt"),
 	RXVT_UNICODE("rxvt-unicode"),
 	RXVT_UNICODE_256COLOR("rxvt-unicode-256color"),
 	SCOANSI("scoansi"),
 	SCREEN("screen", OLD_STYLE),
-	SCREEN_LINUX("screen.linux"),
+	SCREEN_LINUX("screen.linux") {
+		/**
+		 * @see TerminalType#getDefaultSize()
+		 */
+		@Override
+		public Dimension getDefaultSize() {
+			return _80X25;
+		}
+	},
 	SUN_CMD("sun-cmd"),
-	SUN_COLOR("sun-color", NONE),
+	SUN_COLOR("sun-color", NONE) {
+		/**
+		 * @see TerminalType#getDefaultSize()
+		 */
+		@Override
+		public Dimension getDefaultSize() {
+			return _80X25;
+		}
+	},
 	VT52("vt52", NONE),
 	VT100("vt100", NONE),
 	VT320("vt320", NONE),
