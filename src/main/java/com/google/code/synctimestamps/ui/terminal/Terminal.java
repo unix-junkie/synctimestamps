@@ -473,6 +473,8 @@ public final class Terminal extends PrintWriter {
 	 */
 	private static String getTerminalEncoding(final String term) {
 		switch (safeValueOf(term)) {
+		case SUN_COLOR:
+			return "ISO8859-1";
 		case VTNT:
 			return isLocaleCyrilic() ? "IBM866" : "IBM437";
 		default:
