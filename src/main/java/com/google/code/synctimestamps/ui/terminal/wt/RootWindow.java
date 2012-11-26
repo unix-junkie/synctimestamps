@@ -39,6 +39,8 @@ public final class RootWindow {
 
 	private Color background;
 
+	private final RootWindowBuffer buffer;
+
 	/**
 	 * @param term
 	 */
@@ -55,6 +57,8 @@ public final class RootWindow {
 			this.width = size.getWidth();
 			this.height = size.getHeight();
 		}
+
+		this.buffer = new RootWindowBuffer(this.width, this.height);
 	}
 
 	public void setForeground(@Nonnull final Color foreground,
@@ -75,35 +79,22 @@ public final class RootWindow {
 		this.background = background;
 	}
 
-	/**
-	 * @todo cygwin and sun-color (at least) do auto-wraparound, so the last line is not usable (xterm, rxvt, linux, dtterm, vtnt and vt320 are fine)
-	 */
 	public void paint() {
 		for (int i = 2; i <= this.width - 1; i++) {
-			this.term.setCursorLocation(i, 1);
-			this.term.print('-');
-			this.term.setCursorLocation(i, this.height);
-			this.term.print('-');
+			this.buffer.setTextAt('-', i, 1);
+			this.buffer.setTextAt('-', i, this.height);
 		}
 
 		for (int i = 2; i <= this.height - 1; i++) {
-			this.term.setCursorLocation(1, i);
-			this.term.print('|');
-			this.term.setCursorLocation(this.width, i);
-			this.term.print('|');
+			this.buffer.setTextAt('|', 1, i);
+			this.buffer.setTextAt('|', this.width, i);
 		}
 
-		this.term.setCursorLocation(1, 1);
-		this.term.print('+');
-		this.term.setCursorLocation(1, this.height);
-		this.term.print('+');
-		this.term.setCursorLocation(this.width, 1);
-		this.term.print('+');
-		this.term.setCursorLocation(this.width, this.height);
-		this.term.print('+');
+		this.buffer.setTextAt('+', 1, 1);
+		this.buffer.setTextAt('+', 1, this.height);
+		this.buffer.setTextAt('+', this.width, 1);
+		this.buffer.setTextAt('+', this.width, this.height);
 
-		this.term.setCursorLocation(1, 1);
-
-		this.term.flush();
+		this.buffer.paint(this.term);
 	}
 }

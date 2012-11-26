@@ -92,6 +92,23 @@ public final class Terminal extends PrintWriter {
 				: probablySizeHandler;
 
 		this.sequenceTokenizer = new SequenceTokenizer(this, rootHandler);
+
+		this.invokeLater(new Runnable() {
+			/**
+			 * @see Runnable#run()
+			 */
+			@Override
+			public void run() {
+				/*
+				 * Auto linefeed can have any value;
+				 */
+				Terminal.this.setAutoLinefeed(false);
+
+				/*
+				 * Auto wraparound should be on.
+				 */
+				Terminal.this.setAutoWraparound(true);
+			}});
 	}
 
 	public void start() {
@@ -443,6 +460,34 @@ public final class Terminal extends PrintWriter {
 		return this;
 	}
 
+	/**
+	 * @param enabled
+	 */
+	public Terminal setAutoWraparound(final boolean enabled) {
+		/*
+		 * DEC Private Mode Set/Reset
+		 */
+		this.printCsi().print('?');
+		this.print(7);
+		this.print(enabled ? 'h' : 'l');
+		this.flush();
+
+		return this;
+	}
+
+	/**
+	 * @param enabled
+	 */
+	public Terminal setAutoLinefeed(final boolean enabled) {
+		/*
+		 * LNM: Automatic Newline (h)/Normal Linefeed (l)
+		 */
+		this.printCsi().print(20);
+		this.print(enabled ? 'h' : 'l');
+		this.flush();
+
+		return this;
+	}
 	/**
 	 * Can be invoked from any thread except for {@linkplain
 	 * SequenceConsumer#isDispatchThread() SequenceConsumer Dispatch Thread}.
