@@ -83,6 +83,14 @@ public enum TerminalType {
 		public Dimension getDefaultSize() {
 			return _80X25;
 		}
+
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
+		}
 	},
 	VT52("vt52", NONE),
 	VT100("vt100", NONE),
@@ -104,6 +112,14 @@ public enum TerminalType {
 		@Override
 		public Dimension getDefaultSize() {
 			return _80X25;
+		}
+
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
 		}
 	},
 	;
@@ -522,6 +538,15 @@ public enum TerminalType {
 	 */
 	public Dimension getDefaultSize() {
 		return _80X24;
+	}
+
+	/**
+	 * @return whether printing any character at the lower right corner
+	 *         is "safe", i. e. doesn't cause the whole screen
+	 *         to scroll one line up.
+	 */
+	public boolean canUpdateLowerRightCell() {
+		return true;
 	}
 
 	/**
