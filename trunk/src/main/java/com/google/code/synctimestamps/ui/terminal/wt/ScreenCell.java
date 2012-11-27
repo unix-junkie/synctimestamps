@@ -23,6 +23,8 @@ final class ScreenCell {
 
 	private TextAttribute attributes[];
 
+	private boolean alternateCharset;
+
 	ScreenCell() {
 		/*
 		 * Print a space by default, since not all terminals can

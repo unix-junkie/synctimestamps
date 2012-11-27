@@ -4,6 +4,7 @@
 package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.ASCII;
 import static com.google.code.synctimestamps.ui.terminal.TerminalType.safeValueOf;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.System.getProperty;
@@ -505,12 +506,29 @@ public final class Terminal extends PrintWriter {
 		return this.type.getDefaultSize();
 	}
 
+	public LineDrawingMethod getLineDrawingMethod() {
+		for (final LineDrawingMethod method : LineDrawingMethod.values()) {
+			if (method.supportedFor(this)) {
+				return method;
+			}
+		}
+
+		/*
+		 * Fall back to ASCII
+		 */
+		return ASCII;
+	}
+
 	/**
 	 * @param mode
 	 */
 	private Terminal eraseInDisplay(@Nonnull final EraseInDisplay mode) {
 		this.printCsi().printf("%dJ", Integer.valueOf(mode.ordinal()));
 		return this;
+	}
+
+	String getEncoding() {
+		return getTerminalEncoding(this.type.term);
 	}
 
 	/**
