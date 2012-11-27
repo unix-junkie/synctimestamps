@@ -74,7 +74,15 @@ public enum TerminalType {
 			return _80X25;
 		}
 	},
-	SUN_CMD("sun-cmd"),
+	SUN_CMD("sun-cmd") {
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
+		}
+	},
 	SUN_COLOR("sun-color", NONE) {
 		/**
 		 * @see TerminalType#getDefaultSize()
@@ -135,7 +143,7 @@ public enum TerminalType {
 		}
 	}
 
-	private final String term;
+	final String term;
 
 	private final TitleWriter titleWriter;
 
