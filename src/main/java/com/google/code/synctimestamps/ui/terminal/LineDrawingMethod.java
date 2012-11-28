@@ -3,8 +3,22 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_DOWN_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_DOWN_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_HORIZONTAL;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_UP_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_UP_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_DOUBLE_VERTICAL;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_DOWN_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_DOWN_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_HORIZONTAL;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_UP_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_UP_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingCharacters.BOX_DRAWINGS_LIGHT_VERTICAL;
 import static com.google.code.synctimestamps.ui.terminal.TerminalType.SUN_COLOR;
 import static java.util.Arrays.asList;
+
+import com.google.code.synctimestamps.ui.terminal.wt.BorderStyle;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -18,7 +32,82 @@ public enum LineDrawingMethod {
 		 */
 		@Override
 		public boolean supportedFor(final Terminal term) {
-			return asList("UTF-8", "IBM437", "IBM866", "KOI8-R").contains(term.getEncoding());
+			switch (term.getType()) {
+			case ANSI:
+			case LINUX:
+			case RXVT_UNICODE:
+			case RXVT_UNICODE_256COLOR:
+			case SCOANSI:
+			case SCREEN:
+			case SCREEN_LINUX:
+			case VT52:
+			case VT100:
+			case VT320:
+			case VTNT:
+			case XTERM:
+			case CYGWIN:
+				return asList("UTF-8", "IBM437", "CP437", "IBM866", "CP866", "KOI8-R").contains(term.getEncoding());
+			case DTTERM:
+			case KTERM:
+			case RXVT:
+			case SUN_CMD:
+			case SUN_COLOR:
+			default:
+				return false;
+			}
+		}
+
+		/**
+		 * @see LineDrawingMethod#getChar(LineDrawingConstants, BorderStyle)
+		 */
+		@Override
+		public char getChar(final LineDrawingConstants character, final BorderStyle style) {
+			switch (style) {
+			case NONE:
+				return ' ';
+			case SINGLE:
+				switch (character) {
+				case HORIZONTAL:
+					return BOX_DRAWINGS_LIGHT_HORIZONTAL.getCharacter();
+				case VERTICAL:
+					return BOX_DRAWINGS_LIGHT_VERTICAL.getCharacter();
+				case DOWN_AND_RIGHT:
+					return BOX_DRAWINGS_LIGHT_DOWN_AND_RIGHT.getCharacter();
+				case DOWN_AND_LEFT:
+					return BOX_DRAWINGS_LIGHT_DOWN_AND_LEFT.getCharacter();
+				case UP_AND_RIGHT:
+					return BOX_DRAWINGS_LIGHT_UP_AND_RIGHT.getCharacter();
+				case UP_AND_LEFT:
+					return BOX_DRAWINGS_LIGHT_UP_AND_LEFT.getCharacter();
+				}
+				break;
+			case DOUBLE:
+				switch (character) {
+				case HORIZONTAL:
+					return BOX_DRAWINGS_DOUBLE_HORIZONTAL.getCharacter();
+				case VERTICAL:
+					return BOX_DRAWINGS_DOUBLE_VERTICAL.getCharacter();
+				case DOWN_AND_RIGHT:
+					return BOX_DRAWINGS_DOUBLE_DOWN_AND_RIGHT.getCharacter();
+				case DOWN_AND_LEFT:
+					return BOX_DRAWINGS_DOUBLE_DOWN_AND_LEFT.getCharacter();
+				case UP_AND_RIGHT:
+					return BOX_DRAWINGS_DOUBLE_UP_AND_RIGHT.getCharacter();
+				case UP_AND_LEFT:
+					return BOX_DRAWINGS_DOUBLE_UP_AND_LEFT.getCharacter();
+				}
+				break;
+			}
+
+			return '?';
+		}
+
+		/**
+		 * @see LineDrawingMethod#isAlternateCharset()
+		 */
+		@Override
+		public boolean isAlternateCharset() {
+			return false;
 		}
 	},
 	VT100_LINES {
@@ -51,6 +140,22 @@ public enum LineDrawingMethod {
 				return false;
 			}
 		}
+
+		/**
+		 * @see LineDrawingMethod#getChar(LineDrawingConstants, BorderStyle)
+		 */
+		@Override
+		public char getChar(final LineDrawingConstants character, final BorderStyle style) {
+			return ' ';
+		}
+
+		/**
+		 * @see LineDrawingMethod#isAlternateCharset()
+		 */
+		@Override
+		public boolean isAlternateCharset() {
+			return true;
+		}
 	},
 	SUN_COLOR_LINES {
 		/**
@@ -59,6 +164,22 @@ public enum LineDrawingMethod {
 		@Override
 		public boolean supportedFor(final Terminal term) {
 			return term.getType() == SUN_COLOR;
+		}
+
+		/**
+		 * @see LineDrawingMethod#getChar(LineDrawingConstants, BorderStyle)
+		 */
+		@Override
+		public char getChar(final LineDrawingConstants character, final BorderStyle style) {
+			return ' ';
+		}
+
+		/**
+		 * @see LineDrawingMethod#isAlternateCharset()
+		 */
+		@Override
+		public boolean isAlternateCharset() {
+			return false;
 		}
 	},
 	ASCII {
@@ -72,8 +193,66 @@ public enum LineDrawingMethod {
 			 */
 			return true;
 		}
+
+		/**
+		 * @see LineDrawingMethod#getChar(LineDrawingConstants, BorderStyle)
+		 */
+		@Override
+		public char getChar(final LineDrawingConstants character, final BorderStyle style) {
+			switch (style) {
+			case NONE:
+				return ' ';
+			case SINGLE:
+				switch (character) {
+				case HORIZONTAL:
+					return '-';
+				case VERTICAL:
+					return '|';
+				case DOWN_AND_RIGHT:
+				case DOWN_AND_LEFT:
+				case UP_AND_RIGHT:
+				case UP_AND_LEFT:
+					return '+';
+				}
+				break;
+			case DOUBLE:
+				switch (character) {
+				case HORIZONTAL:
+					return '=';
+				case VERTICAL:
+					return '|';
+				case DOWN_AND_RIGHT:
+				case DOWN_AND_LEFT:
+				case UP_AND_RIGHT:
+				case UP_AND_LEFT:
+					return '+';
+				}
+				break;
+			}
+
+			return '?';
+		}
+
+		/**
+		 * @see LineDrawingMethod#isAlternateCharset()
+		 */
+		@Override
+		public boolean isAlternateCharset() {
+			return false;
+		}
 	},
 	;
 
+	/**
+	 * @param term
+	 */
 	public abstract boolean supportedFor(final Terminal term);
+
+	/**
+	 * @param character
+	 * @param style
+	 */
+	public abstract char getChar(final LineDrawingConstants character, final BorderStyle style);
+
+	public abstract boolean isAlternateCharset();
 }
