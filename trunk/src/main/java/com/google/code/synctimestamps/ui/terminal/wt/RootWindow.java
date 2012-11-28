@@ -3,6 +3,14 @@
  */
 package com.google.code.synctimestamps.ui.terminal.wt;
 
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.DOWN_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.DOWN_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.HORIZONTAL;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_LEFT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_RIGHT;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.VERTICAL;
+import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.DOUBLE;
+import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.NONE;
 import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
@@ -12,6 +20,7 @@ import javax.annotation.Nonnull;
 
 import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
+import com.google.code.synctimestamps.ui.terminal.LineDrawingMethod;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TextAttribute;
 
@@ -27,7 +36,8 @@ public final class RootWindow {
 
 	private final int height;
 
-	private BorderStyle borderStyle;
+	@Nonnull
+	private final BorderStyle borderStyle = DOUBLE;
 
 	private Color foreground;
 
@@ -80,20 +90,25 @@ public final class RootWindow {
 	}
 
 	public void paint() {
-		for (int i = 2; i <= this.width - 1; i++) {
-			this.buffer.setTextAt('-', i, 1);
-			this.buffer.setTextAt('-', i, this.height);
-		}
+		if (this.borderStyle != NONE) {
+			final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
+			final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
+			for (int i = 2; i <= this.width - 1; i++) {
+				this.buffer.setTextAt(horizontal, i, 1);
+				this.buffer.setTextAt(horizontal, i, this.height);
+			}
 
-		for (int i = 2; i <= this.height - 1; i++) {
-			this.buffer.setTextAt('|', 1, i);
-			this.buffer.setTextAt('|', this.width, i);
-		}
+			final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
+			for (int i = 2; i <= this.height - 1; i++) {
+				this.buffer.setTextAt(vertical, 1, i);
+				this.buffer.setTextAt(vertical, this.width, i);
+			}
 
-		this.buffer.setTextAt('+', 1, 1);
-		this.buffer.setTextAt('+', 1, this.height);
-		this.buffer.setTextAt('+', this.width, 1);
-		this.buffer.setTextAt('+', this.width, this.height);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height);
+		}
 
 		this.buffer.paint(this.term);
 	}
