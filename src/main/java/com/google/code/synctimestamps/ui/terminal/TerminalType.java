@@ -45,7 +45,15 @@ import com.google.common.base.Function;
  * @version $Revision$, $Date$
  */
 public enum TerminalType {
-	ANSI("ansi", NONE),
+	ANSI("ansi", NONE) {
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
+		}
+	},
 	DTTERM("dtterm", OLD_STYLE),
 	/**
 	 * SunOS rxvt reports TERM=kterm.
@@ -100,8 +108,24 @@ public enum TerminalType {
 			return false;
 		}
 	},
-	VT52("vt52", NONE),
-	VT100("vt100", NONE),
+	VT52("vt52", NONE) {
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
+		}
+	},
+	VT100("vt100", NONE) {
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
+		}
+	},
 	VT320("vt320", NONE),
 	VTNT("vtnt", NONE) {
 		/**
@@ -110,6 +134,14 @@ public enum TerminalType {
 		@Override
 		public Dimension getDefaultSize() {
 			return _80X25;
+		}
+
+		/**
+		 * @see TerminalType#canUpdateLowerRightCell()
+		 */
+		@Override
+		public boolean canUpdateLowerRightCell() {
+			return false;
 		}
 	},
 	XTERM("xterm"),

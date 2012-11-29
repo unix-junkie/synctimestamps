@@ -93,23 +93,6 @@ public final class Terminal extends PrintWriter {
 				: probablySizeHandler;
 
 		this.sequenceTokenizer = new SequenceTokenizer(this, rootHandler);
-
-		this.invokeLater(new Runnable() {
-			/**
-			 * @see Runnable#run()
-			 */
-			@Override
-			public void run() {
-				/*
-				 * Auto linefeed can have any value;
-				 */
-				Terminal.this.setAutoLinefeed(false);
-
-				/*
-				 * Auto wraparound should be on.
-				 */
-				Terminal.this.setAutoWraparound(true);
-			}});
 	}
 
 	public void start() {

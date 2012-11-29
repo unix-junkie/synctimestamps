@@ -27,9 +27,9 @@ final class RootWindowBuffer {
 	}
 
 	public void paint(final Terminal term) {
-		term.setCursorLocation(1, 1);
-
 		for (int y = 1, m = this.cells.length; y <= m; y++) {
+			term.setCursorLocation(1, y);
+
 			for (int x = 1, n = this.cells[y - 1].length; x <= n; x++) {
 				if (x == n && y == m && !term.getType().canUpdateLowerRightCell()) {
 					continue;
