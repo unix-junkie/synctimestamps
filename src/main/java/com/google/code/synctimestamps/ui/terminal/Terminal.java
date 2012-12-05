@@ -223,7 +223,7 @@ public final class Terminal extends PrintWriter {
 	 */
 	public Terminal setCursorLocation(final int x, final int y) {
 		if (x <= 0 || y <= 0) {
-			throw new IllegalArgumentException(String.format("[%d; %d]", String.valueOf(x), String.valueOf(y)));
+			throw new IllegalArgumentException(String.format("[%d; %d]", Integer.valueOf(x), Integer.valueOf(y)));
 		}
 
 		this.printCsi();
