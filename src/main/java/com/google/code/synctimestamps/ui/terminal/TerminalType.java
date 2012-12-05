@@ -90,6 +90,32 @@ public enum TerminalType {
 		public boolean canUpdateLowerRightCell() {
 			return false;
 		}
+
+		/**
+		 * The standard escape sequence is not swallowed by sun-cmd
+		 * and printed to stdout instead, so this method is overridden
+		 * to be a no-op.
+		 *
+		 * @param terminal
+		 * @see TerminalType#startAlternateCs(Terminal)
+		 */
+		@Override
+		public void startAlternateCs(final Terminal terminal) {
+			// empty
+		}
+
+		/**
+		 * The standard escape sequence is not swallowed by sun-cmd
+		 * and printed to stdout instead, so this method is overridden
+		 * to be a no-op.
+		 *
+		 * @param terminal
+		 * @see TerminalType#stopAlternateCs(Terminal)
+		 */
+		@Override
+		public void stopAlternateCs(final Terminal terminal) {
+			// empty
+		}
 	},
 	SUN_COLOR("sun-color", NONE) {
 		/**
@@ -171,6 +197,9 @@ public enum TerminalType {
 		}
 	},
 	XTERM("xterm"),
+	XTERM_COLOR("xterm-color"),
+	XTERM_16COLOR("xterm-16color"),
+	XTERM_256COLOR("xterm-256color"),
 	CYGWIN("cygwin", OLD_STYLE) {
 		/**
 		 * @see TerminalType#getDefaultSize()
@@ -290,6 +319,9 @@ public enum TerminalType {
 		 */
 		switch (this) {
 		case XTERM:
+		case XTERM_COLOR:
+		case XTERM_16COLOR:
+		case XTERM_256COLOR:
 			this.registerOldFunctionKeys(); // PuTTY sends old function keys by default
 			this.registerLinuxFunctionKeys(); // PuTTY can also send linux function keys
 			this.registerVt100FunctionKeys(); // PuTTY can also send VT100 function keys

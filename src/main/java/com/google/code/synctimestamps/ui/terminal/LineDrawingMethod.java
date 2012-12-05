@@ -45,6 +45,9 @@ public enum LineDrawingMethod {
 			case VT320:
 			case VTNT:
 			case XTERM:
+			case XTERM_COLOR:
+			case XTERM_16COLOR:
+			case XTERM_256COLOR:
 			case CYGWIN:
 				return asList("UTF-8", "IBM437", "CP437", "IBM866", "CP866", "KOI8-R").contains(term.getEncoding());
 			case DTTERM:
@@ -126,6 +129,9 @@ public enum LineDrawingMethod {
 			case SCREEN_LINUX:
 			case VT320:
 			case XTERM:
+			case XTERM_COLOR:
+			case XTERM_16COLOR:
+			case XTERM_256COLOR:
 			case CYGWIN:
 				return true;
 			case ANSI:
