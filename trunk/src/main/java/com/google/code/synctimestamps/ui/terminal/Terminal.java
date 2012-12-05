@@ -202,7 +202,7 @@ public final class Terminal extends PrintWriter {
 		return this.type;
 	}
 
-	private Terminal printEsc() {
+	Terminal printEsc() {
 		this.print(ESC);
 		return this;
 	}
@@ -238,7 +238,7 @@ public final class Terminal extends PrintWriter {
 	 * VT100 alternate character set is not supported by PuTTY.
 	 */
 	public Terminal startAlternateCs() {
-		this.printEsc().print("(0");
+		this.type.startAlternateCs(this);
 		return this;
 	}
 
@@ -246,7 +246,7 @@ public final class Terminal extends PrintWriter {
 	 * VT100 alternate character set is not supported by PuTTY.
 	 */
 	public Terminal stopAlternateCs() {
-		this.printEsc().print("(B");
+		this.type.stopAlternateCs(this);
 		return this;
 	}
 

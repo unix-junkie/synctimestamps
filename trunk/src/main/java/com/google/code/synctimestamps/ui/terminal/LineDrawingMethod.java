@@ -146,7 +146,28 @@ public enum LineDrawingMethod {
 		 */
 		@Override
 		public char getChar(final LineDrawingConstants character, final BorderStyle style) {
-			return ' ';
+			switch (style) {
+			case NONE:
+				return ' ';
+			default:
+				switch (character) {
+				case HORIZONTAL:
+					return 'q';
+				case VERTICAL:
+					return 'x';
+				case DOWN_AND_RIGHT:
+					return 'l';
+				case DOWN_AND_LEFT:
+					return 'k';
+				case UP_AND_RIGHT:
+					return 'm';
+				case UP_AND_LEFT:
+					return 'j';
+				}
+				break;
+			}
+
+			return '?';
 		}
 
 		/**

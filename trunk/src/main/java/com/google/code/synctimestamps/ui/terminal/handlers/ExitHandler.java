@@ -67,6 +67,7 @@ public final class ExitHandler extends AbstractInputEventHandler {
 						term.setDefaultBackground(null);
 						term.setTextAttributes(NORMAL);
 
+						term.stopAlternateCs();
 						term.clear();
 						term.setCursorVisible(true);
 
