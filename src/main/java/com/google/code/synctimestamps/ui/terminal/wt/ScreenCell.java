@@ -68,4 +68,12 @@ final class ScreenCell {
 	public void setAttributes(final TextAttribute ... attributes) {
 		this.attributes = attributes;
 	}
+
+	public boolean isAlternateCharset() {
+		return this.alternateCharset;
+	}
+
+	public void setAlternateCharset(final boolean alternateCharset) {
+		this.alternateCharset = alternateCharset;
+	}
 }

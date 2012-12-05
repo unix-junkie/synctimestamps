@@ -92,22 +92,23 @@ public final class RootWindow {
 	public void paint() {
 		if (this.borderStyle != NONE) {
 			final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
+			final boolean alternateCharset = lineDrawingMethod.isAlternateCharset();
 			final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
 			for (int i = 2; i <= this.width - 1; i++) {
-				this.buffer.setTextAt(horizontal, i, 1);
-				this.buffer.setTextAt(horizontal, i, this.height);
+				this.buffer.setTextAt(horizontal, i, 1, alternateCharset);
+				this.buffer.setTextAt(horizontal, i, this.height, alternateCharset);
 			}
 
 			final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
 			for (int i = 2; i <= this.height - 1; i++) {
-				this.buffer.setTextAt(vertical, 1, i);
-				this.buffer.setTextAt(vertical, this.width, i);
+				this.buffer.setTextAt(vertical, 1, i, alternateCharset);
+				this.buffer.setTextAt(vertical, this.width, i, alternateCharset);
 			}
 
-			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height, alternateCharset);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1, alternateCharset);
+			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height, alternateCharset);
 		}
 
 		this.buffer.paint(this.term);
