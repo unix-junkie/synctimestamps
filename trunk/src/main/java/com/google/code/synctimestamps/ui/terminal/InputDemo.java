@@ -18,8 +18,8 @@ import java.io.PrintWriter;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.LineDrawingHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
+import com.google.code.synctimestamps.ui.terminal.handlers.WtHandler;
 
 /**
  * This code has been designed for JNLP/Java Web Start use,
@@ -80,7 +80,7 @@ public abstract class InputDemo {
 				 * TTY device specified.
 				 */
 				final String ttyName = args[0];
-				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler().append(new TerminalSizeHandler()).append(new LineDrawingHandler()).append(new Echo()));
+				final Terminal term = new Terminal(ttyName, getenv("TERM"), new ExitHandler().append(new TerminalSizeHandler()).append(new WtHandler()).append(new Echo()));
 				term.invokeLater(new Runnable() {
 					/**
 					 * @see Runnable#run()
