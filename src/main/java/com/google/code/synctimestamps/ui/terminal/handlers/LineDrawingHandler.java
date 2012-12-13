@@ -274,7 +274,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param term
 	 */
 	static void lineDrawingCp437(final Terminal term) {
-		dumpCodepage(term, "CP437");
+		dumpCodepage(term, "IBM437");
 
 		term.setTextAttributes(NORMAL);
 		term.flush();
@@ -284,7 +284,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param term
 	 */
 	static void lineDrawingCp866(final Terminal term) {
-		dumpCodepage(term, "CP866");
+		dumpCodepage(term, "IBM866");
 
 		term.setTextAttributes(NORMAL);
 		term.flush();
