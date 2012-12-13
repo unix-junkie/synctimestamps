@@ -90,32 +90,6 @@ public enum TerminalType {
 		public boolean canUpdateLowerRightCell() {
 			return false;
 		}
-
-		/**
-		 * The standard escape sequence is not swallowed by sun-cmd
-		 * and printed to stdout instead, so this method is overridden
-		 * to be a no-op.
-		 *
-		 * @param terminal
-		 * @see TerminalType#startAlternateCs(Terminal)
-		 */
-		@Override
-		public void startAlternateCs(final Terminal terminal) {
-			// empty
-		}
-
-		/**
-		 * The standard escape sequence is not swallowed by sun-cmd
-		 * and printed to stdout instead, so this method is overridden
-		 * to be a no-op.
-		 *
-		 * @param terminal
-		 * @see TerminalType#stopAlternateCs(Terminal)
-		 */
-		@Override
-		public void stopAlternateCs(final Terminal terminal) {
-			// empty
-		}
 	},
 	SUN_COLOR("sun-color", NONE) {
 		/**
@@ -132,32 +106,6 @@ public enum TerminalType {
 		@Override
 		public boolean canUpdateLowerRightCell() {
 			return false;
-		}
-
-		/**
-		 * The standard escape sequence is not swallowed by sun-color
-		 * and printed to stdout instead, so this method is overridden
-		 * to be a no-op.
-		 *
-		 * @param terminal
-		 * @see TerminalType#startAlternateCs(Terminal)
-		 */
-		@Override
-		public void startAlternateCs(final Terminal terminal) {
-			// empty
-		}
-
-		/**
-		 * The standard escape sequence is not swallowed by sun-color
-		 * and printed to stdout instead, so this method is overridden
-		 * to be a no-op.
-		 *
-		 * @param terminal
-		 * @see TerminalType#stopAlternateCs(Terminal)
-		 */
-		@Override
-		public void stopAlternateCs(final Terminal terminal) {
-			// empty
 		}
 	},
 	VT52("vt52", NONE) {
@@ -645,24 +593,6 @@ public enum TerminalType {
 	 */
 	public boolean canUpdateLowerRightCell() {
 		return true;
-	}
-
-	/**
-	 * VT100 alternate character set is not supported by PuTTY.
-	 *
-	 * @param term
-	 */
-	public void startAlternateCs(final Terminal terminal) {
-		terminal.printEsc().print("(0");
-	}
-
-	/**
-	 * VT100 alternate character set is not supported by PuTTY.
-	 *
-	 * @param term
-	 */
-	public void stopAlternateCs(final Terminal terminal) {
-		terminal.printEsc().print("(B");
 	}
 
 	/**

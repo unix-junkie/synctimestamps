@@ -5,6 +5,7 @@ package com.google.code.synctimestamps.ui.terminal;
 
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.ASCII;
+import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.VT100_LINES;
 import static com.google.code.synctimestamps.ui.terminal.TerminalType.safeValueOf;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.System.getProperty;
@@ -203,7 +204,7 @@ public final class Terminal extends PrintWriter {
 		return this.type;
 	}
 
-	Terminal printEsc() {
+	private Terminal printEsc() {
 		this.print(ESC);
 		return this;
 	}
@@ -239,7 +240,10 @@ public final class Terminal extends PrintWriter {
 	 * VT100 alternate character set is not supported by PuTTY.
 	 */
 	public Terminal startAlternateCs() {
-		this.type.startAlternateCs(this);
+		if (VT100_LINES.supportedFor(this)) {
+			this.printEsc().print("(0");
+		}
+
 		return this;
 	}
 
@@ -247,7 +251,10 @@ public final class Terminal extends PrintWriter {
 	 * VT100 alternate character set is not supported by PuTTY.
 	 */
 	public Terminal stopAlternateCs() {
-		this.type.stopAlternateCs(this);
+		if (VT100_LINES.supportedFor(this)) {
+			this.printEsc().print("(B");
+		}
+
 		return this;
 	}
 
