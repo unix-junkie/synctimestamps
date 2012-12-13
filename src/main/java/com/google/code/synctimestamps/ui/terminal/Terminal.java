@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -283,6 +284,13 @@ public final class Terminal extends PrintWriter {
 	/**
 	 * @param attributes
 	 */
+	public Terminal setTextAttributes(@Nonnull final Set<TextAttribute> attributes) {
+		return this.setTextAttributes(TextAttribute.toArray(attributes));
+	}
+
+	/**
+	 * @param attributes
+	 */
 	public Terminal setTextAttributes(@Nonnull final TextAttribute ... attributes) {
 		return this.setTextAttributes(null, null, attributes);
 	}
@@ -389,6 +397,14 @@ public final class Terminal extends PrintWriter {
 
 	public Terminal restoreDefaultBackground() {
 		return this.setBackground(this.defaultBackground);
+	}
+
+	public Color getDefaultForeground() {
+		return this.defaultForeground;
+	}
+
+	public Color getDefaultBackground() {
+		return this.defaultBackground;
 	}
 
 	public Terminal clear() {

@@ -3,6 +3,15 @@
  */
 package com.google.code.synctimestamps.ui.terminal.wt;
 
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.EnumSet.noneOf;
+
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.Nonnull;
 
 import com.google.code.synctimestamps.ui.terminal.Color;
@@ -17,24 +26,26 @@ final class ScreenCell {
 	@Nonnull
 	private char text;
 
+	@Nonnull
 	private Color foreground;
 
+	@Nonnull
 	private Color background;
 
-	private TextAttribute attributes[];
+	@Nonnull
+	private final Set<TextAttribute> attributes = noneOf(TextAttribute.class);
 
 	private boolean alternateCharset;
 
 	ScreenCell() {
-		/*
-		 * Print a space by default, since not all terminals can
-		 * use the background color in order to erase the scereen.
-		 */
 		this(' ');
 	}
 
+	/**
+	 * @param text
+	 */
 	ScreenCell(final char text) {
-		this.text = text;
+		this.setText(text);
 	}
 
 	public char getText() {
@@ -48,31 +59,71 @@ final class ScreenCell {
 		this.text = text;
 	}
 
+	public Color getForeground() {
+		assert this.foreground != null;
+		return this.foreground;
+	}
+
 	/**
 	 * @param foreground
 	 */
 	public void setForeground(final Color foreground) {
+		if (foreground == null) {
+			throw new IllegalArgumentException();
+		}
+
 		this.foreground = foreground;
+	}
+
+	public Color getBackground() {
+		assert this.background != null;
+		return this.background;
 	}
 
 	/**
 	 * @param background
 	 */
 	public void setBackground(final Color background) {
+		if (background == null) {
+			throw new IllegalArgumentException();
+		}
+
 		this.background = background;
+	}
+
+	public Set<TextAttribute> getAttributes() {
+		return this.attributes.isEmpty()
+				? singleton(NORMAL)
+				: unmodifiableSet(this.attributes);
+	}
+
+	/**
+	 * @param attributes
+	 */
+	public void setAttributes(final Set<TextAttribute> attributes) {
+		this.setAttributes(TextAttribute.toArray(attributes));
 	}
 
 	/**
 	 * @param attributes
 	 */
 	public void setAttributes(final TextAttribute ... attributes) {
-		this.attributes = attributes;
+		final List<TextAttribute> newAttributes = asList(attributes);
+		if (newAttributes.size() > 1 && newAttributes.contains(NORMAL)) {
+			throw new IllegalArgumentException("NORMAL is acceptable, but it should be the only attribute supplied");
+		}
+
+		this.attributes.clear();
+		this.attributes.addAll(newAttributes);
 	}
 
 	public boolean isAlternateCharset() {
 		return this.alternateCharset;
 	}
 
+	/**
+	 * @param alternateCharset
+	 */
 	public void setAlternateCharset(final boolean alternateCharset) {
 		this.alternateCharset = alternateCharset;
 	}
