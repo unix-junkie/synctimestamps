@@ -29,12 +29,10 @@ public final class UnixJnlpLauncher implements JnlpLauncher {
 	};
 
 	/**
-	 * @see JnlpLauncher#launchExternalTerminalEmulator(Class, String, String)
+	 * @see JnlpLauncher#launchTerminalEmulator(Application)
 	 */
 	@Override
-	public Process launchExternalTerminalEmulator(@Nonnull final Class<?> mainClass,
-			final String title,
-			final String iconName)
+	public Process launchTerminalEmulator(@Nonnull final Application application)
 	throws IOException {
 		final boolean debugMode = getBoolean("terminal.debug");
 		final String javaCommandLine = getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java -classpath \"" + getProperty("java.class.path") + "\" "
@@ -42,7 +40,7 @@ public final class UnixJnlpLauncher implements JnlpLauncher {
 						? "-Dfile.encoding=\"`locale charmap`\" " // Apple's Java implementation default is MacRoman
 						: "")
 				+ "-Dterminal.debug=" + debugMode + " "
-				+ mainClass.getName();
+				+ application.getClass().getName();
 
 		if (getProperty("os.name").equals("Mac OS X")) {
 			setProperty("java.io.tmpdir", "/tmp");  // By default, /var/folders/Fv/FvLjTL7NHa06CiaNGkyzpE+++TI/-Tmp-/ is used
@@ -94,17 +92,19 @@ public final class UnixJnlpLauncher implements JnlpLauncher {
 		shellScript.setExecutable(true);
 		shellScript.deleteOnExit();
 
-		return newTerminalProcess(title, iconName, shellScript.getPath());
+		return newTerminalProcess(application.getWindowTitle(), application.getIconName(), shellScript.getPath());
 	}
 
 	/**
-	 * @see JnlpLauncher#launchTelnetSession(Application, boolean)
+	 * @see JnlpLauncher#exitAfterChildTerminates()
 	 */
 	@Override
-	public Process launchTelnetSession(@Nonnull final Application application,
-			final boolean keepCmdRunning)
-	throws IOException {
-		throw new UnsupportedOperationException();
+	public boolean exitAfterChildTerminates() {
+		/*
+		 * The parent JVM process should exit immediately
+		 * once the child process terminates.
+		 */
+		return true;
 	}
 
 	/**

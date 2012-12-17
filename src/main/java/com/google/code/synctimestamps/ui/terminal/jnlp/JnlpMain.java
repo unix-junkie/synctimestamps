@@ -9,7 +9,6 @@ import static java.lang.System.getProperty;
 import java.io.IOException;
 
 import com.google.code.synctimestamps.ui.terminal.Application;
-import com.google.code.synctimestamps.ui.terminal.InputDemo;
 
 /**
  * This code has been designed for JNLP/Java Web Start use,
@@ -31,72 +30,33 @@ public final class JnlpMain {
 	 * @param args
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
-	public static void main(final String args[]) throws IOException, InterruptedException {
-		if (args.length > 1) {
-			System.out.println("Usage: ");
+	public static void main(final String args[])
+	throws IOException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		if (args.length != 1) {
+			System.out.println("Usage: " + JnlpMain.class.getName() + " <CLASSNAME>");
 			return;
 		}
 
-		final JnlpLauncher launcher;
-		if (!getProperty("os.name").startsWith("Windows")) {
-			/*
-			 * Most probably, POSIX.
-			 */
-			launcher = new UnixJnlpLauncher();
+		final String className = args[0];
+		final Class<?> clazz = Class.forName(className);
+		final Application application = (Application) clazz.newInstance();
+		final JnlpLauncher launcher = getProperty("os.name").startsWith("Windows") ? new Win32JnlpLauncher(false) : new UnixJnlpLauncher();
 
-			final Process terminalProcess = launcher.launchExternalTerminalEmulator(InputDemo.class, InputDemo.WINDOW_TITLE, InputDemo.WINDOW_TITLE);
-			if (terminalProcess == null) {
-				System.out.println("Failed to find a suitable terminal emulator in PATH.");
-				return;
-			}
-			final int returnValue = terminalProcess.waitFor();
-			if (returnValue != 0) {
-				System.out.println("Child process exited with code " + returnValue);
-			}
+		final Process terminalProcess = launcher.launchTerminalEmulator(application);
+		if (terminalProcess == null) {
+			System.out.println("Failed to find a suitable terminal emulator in PATH.");
+			return;
+		}
+		final int returnValue = terminalProcess.waitFor();
+		if (returnValue != 0) {
+			System.out.println("Child process exited with code " + returnValue);
+		}
+		if (launcher.exitAfterChildTerminates()) {
 			exit(returnValue);
-		} else {
-			/*
-			 * Windows
-			 */
-			final Application application = new InputDemo();
-			final boolean keepCmdRunning = false;
-
-			launcher = new Win32JnlpLauncher();
-
-			final Process terminalProcess = launcher.launchTelnetSession(application, keepCmdRunning);
-			if (terminalProcess == null) {
-				System.out.println("Failed to find a suitable terminal emulator in PATH.");
-				return;
-			}
-
-			/*-
-			 * If cmd.exe is run as "cmd /C", we shouldn't exit here
-			 * (telnet.exe will still be running).
-			 * If cmd.exe is run as "cmd /K",
-			 * this child process never returns (unless we terminate the JVM).
-			 *
-			 * On Windows, we shouldn't be actually waiting for the child process
-			 * to return: this launcher doesn't spawn any separate child JVM
-			 * (which is what we do on UNIX).
-			 *
-			 * Additionally, we don't yet detect it if a user
-			 * just closes the telnet.exe window (JVM continues running).
-			 */
-			final int returnValue = terminalProcess.waitFor();
-			if (returnValue != 0) {
-				System.out.println("Child process exited with code " + returnValue);
-			}
-
-			if (keepCmdRunning) {
-				/*-
-				 * If cmd.exe has been kept running,
-				 * we don't reach this point anyway
-				 * (unless it is forcibly terminated -- in this case,
-				 * it exits with code 1).
-				 */
-				exit(returnValue);
-			}
 		}
 	}
 }

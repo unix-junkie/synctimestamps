@@ -15,4 +15,8 @@ public interface Application {
 	Runnable getPostCreationTask(final Terminal term);
 
 	InputEventHandler getInputEventHandler();
+
+	String getWindowTitle();
+
+	String getIconName();
 }
