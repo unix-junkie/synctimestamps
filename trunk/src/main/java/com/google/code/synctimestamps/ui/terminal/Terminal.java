@@ -80,13 +80,23 @@ public final class Terminal extends PrintWriter {
 	private final QuietTerminalSizeHandler sizeHandler;
 
 	/**
-	 * @param ttyName
 	 * @param term
 	 * @param handler
+	 * @throws UnsupportedEncodingException
+	 */
+	protected Terminal(final String term, final InputEventHandler handler)
+	throws UnsupportedEncodingException {
+		this(term, handler, System.in, System.out);
+	}
+
+	/**
+	 * @param term
+	 * @param handler
+	 * @param ttyName
 	 * @throws FileNotFoundException
 	 * @throws UnsupportedEncodingException
 	 */
-	protected Terminal(final String ttyName, final String term, final InputEventHandler handler)
+	protected Terminal(final String term, final InputEventHandler handler, final String ttyName)
 	throws FileNotFoundException, UnsupportedEncodingException {
 		super(ttyName, getTerminalEncoding(term));
 		this.type = safeValueOf(term);
@@ -104,13 +114,13 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
-	 * @param in
-	 * @param out
 	 * @param term
 	 * @param handler
+	 * @param in
+	 * @param out
 	 * @throws UnsupportedEncodingException
 	 */
-	protected Terminal(final InputStream in, final OutputStream out, final String term, final InputEventHandler handler)
+	protected Terminal(final String term, final InputEventHandler handler, final InputStream in, final OutputStream out)
 	throws UnsupportedEncodingException {
 		super(new OutputStreamWriter(out, getTerminalEncoding(term)));
 		this.type = safeValueOf(term);
@@ -128,14 +138,14 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
-	 * @param socket
 	 * @param term
 	 * @param handler
+	 * @param socket
 	 * @throws IOException
 	 */
-	protected Terminal(final Socket socket, final String term, final InputEventHandler handler)
+	public Terminal(final String term, final InputEventHandler handler, final Socket socket)
 	throws IOException {
-		this(socket.getInputStream(), socket.getOutputStream(), term, handler);
+		this(term, handler, socket.getInputStream(), socket.getOutputStream());
 	}
 
 	public void start() {
