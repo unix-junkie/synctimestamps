@@ -17,10 +17,6 @@ import javax.annotation.Nonnull;
 
 import com.google.code.synctimestamps.ui.terminal.Application;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
-import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
-import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.TerminalSizeHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.WtHandler;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -53,7 +49,7 @@ public final class Win32JnlpLauncher implements JnlpLauncher {
 			public void run() {
 				try {
 					final Socket socket = serverSocket.accept();
-					final Terminal term = new Terminal(terminalType, new ExitHandler().append(new TerminalSizeHandler()).append(new WtHandler()).append(new Echo()), socket);
+					final Terminal term = new Terminal(terminalType, application.getInputEventHandler(), socket);
 					term.invokeLater(application.getPostCreationTask(term));
 				} catch (final IOException ioe) {
 					ioe.printStackTrace();
