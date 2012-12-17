@@ -3,7 +3,10 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static java.lang.System.exit;
+
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -148,6 +151,15 @@ public final class SequenceTokenizer extends Thread {
 							}
 						}
 					}
+				} catch (final SocketException se) {
+					/*
+					 * Socket we're reading from is closed,
+					 * so suppress the output and exit the application.
+					 */
+					/**
+					 * @todo write to the log file.
+					 */
+					exit(0);
 				} catch (final IOException ioe) {
 					/*
 					 * Never.

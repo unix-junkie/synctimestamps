@@ -16,9 +16,15 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -97,12 +103,48 @@ public final class Terminal extends PrintWriter {
 		this.sequenceTokenizer = new SequenceTokenizer(this, rootHandler);
 	}
 
+	/**
+	 * @param in
+	 * @param out
+	 * @param term
+	 * @param handler
+	 * @throws UnsupportedEncodingException
+	 */
+	protected Terminal(final InputStream in, final OutputStream out, final String term, final InputEventHandler handler)
+	throws UnsupportedEncodingException {
+		super(new OutputStreamWriter(out, getTerminalEncoding(term)));
+		this.type = safeValueOf(term);
+		this.in = new InputStreamReader(in);
+
+		final QuietTerminalSizeHandler probablySizeHandler = findSizeHandler(handler);
+		final InputEventHandler rootHandler = probablySizeHandler == null
+				? new QuietTerminalSizeHandler().append(handler)
+				: handler;
+		this.sizeHandler = probablySizeHandler == null
+				? (QuietTerminalSizeHandler) rootHandler
+				: probablySizeHandler;
+
+		this.sequenceTokenizer = new SequenceTokenizer(this, rootHandler);
+	}
+
+	/**
+	 * @param socket
+	 * @param term
+	 * @param handler
+	 * @throws IOException
+	 */
+	protected Terminal(final Socket socket, final String term, final InputEventHandler handler)
+	throws IOException {
+		this(socket.getInputStream(), socket.getOutputStream(), term, handler);
+	}
+
 	public void start() {
 		this.sequenceTokenizer.start();
 	}
 
 	/**
 	 * @throws IOException
+	 * @throws SocketException
 	 */
 	public int read() throws IOException {
 		return this.in.read();
