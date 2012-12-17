@@ -24,20 +24,20 @@ import com.google.code.synctimestamps.ui.terminal.Terminal;
  * @version $Revision$, $Date$
  */
 public final class Win32JnlpLauncher implements JnlpLauncher {
+	private final boolean keepCmdRunning;
+
 	/**
-	 * @see JnlpLauncher#launchExternalTerminalEmulator(Class, String, String)
+	 * @param keepCmdRunning
 	 */
-	@Override
-	public Process launchExternalTerminalEmulator(@Nonnull final Class<?> mainClass,
-			final String title,
-			final String iconName)
-	throws IOException {
-		throw new UnsupportedOperationException();
+	public Win32JnlpLauncher(final boolean keepCmdRunning) {
+		this.keepCmdRunning = keepCmdRunning;
 	}
 
+	/**
+	 * @see JnlpLauncher#launchTerminalEmulator(Application)
+	 */
 	@Override
-	public Process launchTelnetSession(@Nonnull final Application application,
-			final boolean keepCmdRunning)
+	public Process launchTerminalEmulator(@Nonnull final Application application)
 	throws IOException {
 		final String terminalType = "vtnt";
 		final ServerSocket serverSocket = listenOnLowestUnoccupiedPort();
@@ -72,8 +72,35 @@ public final class Win32JnlpLauncher implements JnlpLauncher {
 		 * cmd /K: we have a java.exe -> cmd.exe -> telnet.exe chain of running processes
 		 * (and we don't know the PID, either).
 		 */
-		final String telnetCommandLine[] = new String[]{cmdPath, keepCmdRunning ? "/K" : "/C", "start", telnetPath, "-t", terminalType, serverSocket.getInetAddress().getCanonicalHostName(), String.valueOf(serverSocket.getLocalPort())};
+		final String telnetCommandLine[] = new String[]{cmdPath, this.keepCmdRunning ? "/K" : "/C", "start", telnetPath, "-t", terminalType, serverSocket.getInetAddress().getCanonicalHostName(), String.valueOf(serverSocket.getLocalPort())};
 		return getRuntime().exec(telnetCommandLine);
+	}
+
+	/**
+	 * @see JnlpLauncher#exitAfterChildTerminates()
+	 */
+	@Override
+	public boolean exitAfterChildTerminates() {
+		/*-
+		 * If cmd.exe is run as "cmd /C", we shouldn't exit here
+		 * (telnet.exe will still be running).
+		 * If cmd.exe is run as "cmd /K",
+		 * this child process never returns (unless we terminate the JVM).
+		 *
+		 * On Windows, we shouldn't be actually waiting for the child process
+		 * to return: this launcher doesn't spawn any separate child JVM
+		 * (which is what we do on UNIX).
+		 *
+		 * Additionally, we don't yet detect it if a user
+		 * just closes the telnet.exe window (JVM continues running).
+		 *
+		 *
+		 * If cmd.exe has been kept running,
+		 * we don't reach this point anyway
+		 * (unless it is forcibly terminated -- in this case,
+		 * it exits with code 1).
+		 */
+		return this.keepCmdRunning;
 	}
 
 	private static ServerSocket listenOnLowestUnoccupiedPort() {

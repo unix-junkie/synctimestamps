@@ -20,7 +20,7 @@ import com.google.code.synctimestamps.ui.terminal.handlers.WtHandler;
  * @version $Revision$, $Date$
  */
 public final class InputDemo implements Application {
-	public static final String WINDOW_TITLE = "SyncTimeStamps";
+	private static final String WINDOW_TITLE = "SyncTimeStamps";
 
 	/**
 	 * @param args
@@ -72,5 +72,21 @@ public final class InputDemo implements Application {
 	@Override
 	public InputEventHandler getInputEventHandler() {
 		return new ExitHandler().append(new TerminalSizeHandler()).append(new WtHandler()).append(new Echo());
+	}
+
+	/**
+	 * @see Application#getWindowTitle()
+	 */
+	@Override
+	public String getWindowTitle() {
+		return WINDOW_TITLE;
+	}
+
+	/**
+	 * @see Application#getIconName()
+	 */
+	@Override
+	public String getIconName() {
+		return WINDOW_TITLE;
 	}
 }
