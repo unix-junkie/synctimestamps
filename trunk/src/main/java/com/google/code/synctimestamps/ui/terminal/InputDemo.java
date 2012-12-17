@@ -15,6 +15,10 @@ import static java.lang.System.setProperty;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
@@ -173,32 +177,118 @@ public abstract class InputDemo {
 			/*
 			 * Windows
 			 */
+			final String terminalType = "vtnt";
+			final ServerSocket serverSocket = listenOnLowestUnoccupiedPort();
+			final Thread serverThread = new Thread("ServerThread") {
+				/**
+				 * @see Thread#run()
+				 */
+				@Override
+				public void run() {
+					try {
+						final Socket socket = serverSocket.accept();
+						final Terminal term = new Terminal(socket, terminalType, new ExitHandler().append(new TerminalSizeHandler()).append(new WtHandler()).append(new Echo()));
+						term.invokeLater(new Runnable() {
+							/**
+							 * @see Runnable#run()
+							 */
+							@Override
+							public void run() {
+								term.setTitle(WINDOW_TITLE);
+								term.setToolbarVisible(false);
+								term.setCursorVisible(false);
+								term.setScrollbarVisible(false);
+
+								term.setDefaultForeground(WHITE);
+								term.setDefaultBackground(BLACK);
+								term.clear();
+
+								term.start();
+							}
+						});
+					} catch (final IOException ioe) {
+						ioe.printStackTrace();
+					}
+				}
+			};
+			serverThread.start();
+
 			final String winDir = getenv("WINDIR");
 			final String cmdPath = (winDir == null || winDir.length() == 0 ? getenv("SYSTEMROOT") : winDir) + File.separatorChar + "system32" + File.separatorChar + "cmd.exe";
 			final String telnetPath = (winDir == null || winDir.length() == 0 ? getenv("SYSTEMROOT") : winDir) + File.separatorChar + "system32" + File.separatorChar + "telnet.exe";
-			final String telnetCommandLine[];
 
-			/**
-			 * @todo Instead of launching telnet.exe directly, create a batch file and modify window title.
+			/*-
+			 * Creating an external windows batch file
+			 * in order to have the "title" command set the window title
+			 * before "telnet.exe" is run -- is useless:
+			 * "telnet.exe" overrides the window title anyway.
+			 *
+			 * cmd /C: we end up with an orphaned telnet process, and have no idea of what its PID is.
+			 * cmd /K: we have a java.exe -> cmd.exe -> telnet.exe chain of running processes
+			 * (and we don't know the PID, either).
 			 */
-			final boolean modifyDefaultColors = true;
-			if (modifyDefaultColors) {
-				telnetCommandLine = new String[]{cmdPath, "/C", "start", cmdPath, "/T:8A", "/K", telnetPath, "-t", "ansi"};
-			} else {
-				telnetCommandLine = new String[]{cmdPath, "/C", "start", telnetPath, "-t", "ansi"};
-			}
-
+			final boolean keepCmdRunning = false;
+			final String telnetCommandLine[] = new String[]{cmdPath, keepCmdRunning ? "/K" : "/C", "start", telnetPath, "-t", terminalType, serverSocket.getInetAddress().getCanonicalHostName(), String.valueOf(serverSocket.getLocalPort())};
 			final Process terminalProcess = getRuntime().exec(telnetCommandLine);
 			if (terminalProcess == null) {
 				System.out.println("Failed to find a suitable terminal emulator in PATH.");
 				return;
 			}
 
+			/*-
+			 * If cmd.exe is run as "cmd /C", we shouldn't exit here
+			 * (telnet.exe will still be running).
+			 * If cmd.exe is run as "cmd /K",
+			 * this child process never returns (unless we terminate the JVM).
+			 *
+			 * On Windows, we shouldn't be actually waiting for the child process
+			 * to return: this launcher doesn't spawn any separate child JVM
+			 * (which is what we do on UNIX).
+			 *
+			 * Additionally, we don't yet detect it if a user
+			 * just closes the telnet.exe window (JVM continues running).
+			 */
 			final int returnValue = terminalProcess.waitFor();
 			if (returnValue != 0) {
 				System.out.println("Child process exited with code " + returnValue);
 			}
-			exit(returnValue);
+
+			if (keepCmdRunning) {
+				/*-
+				 * If cmd.exe has been kept running,
+				 * we don't reach this point anyway
+				 * (unless it is forcibly terminated -- in this case,
+				 * it exits with code 1).
+				 */
+				exit(returnValue);
+			}
+		}
+	}
+
+	/**
+	 * Windows only.
+	 */
+	private static ServerSocket listenOnLowestUnoccupiedPort() {
+		int port = 1;
+
+		try {
+
+			while (true) {
+				try {
+					final InetAddress lo0 = InetAddress.getByName("127.0.0.1");
+					assert lo0.isLoopbackAddress();
+					return new ServerSocket(port, 50, lo0);
+				} catch (final BindException be) {
+					port++;
+					continue;
+				}
+			}
+		} catch (final IOException ioe) {
+			/*-
+			 * Never.
+			 */
+			ioe.printStackTrace();
+			return null;
 		}
 	}
 }
