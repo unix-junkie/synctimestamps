@@ -48,9 +48,17 @@ public final class Terminal extends PrintWriter {
 
 	final Thread sequenceTokenizer;
 
+	@Nullable
 	private Color defaultForeground;
 
+	@Nullable
 	private Color defaultBackground;
+
+	@Nullable
+	private Color lastForeground;
+
+	@Nullable
+	private Color lastBackground;
 
 	private final EventQueueFactory eventQueueFactory = new EventQueueFactory();
 
@@ -362,32 +370,47 @@ public final class Terminal extends PrintWriter {
 	public Terminal setTextAttributes(@Nullable final Color foreground,
 			@Nullable final Color background,
 			@Nonnull final TextAttribute ... attributes) {
+		/*
+		 * Remember the last requested foreground and background.
+		 */
+		if (foreground != null) {
+			this.lastForeground = foreground;
+		}
+		if (background != null) {
+			this.lastBackground = background;
+		}
+
 		final StringBuilder s = new StringBuilder();
 
 		/*
-		 * Other text attributes may contain NORMAL (^[[0m),
-		 * so they should be applied *before* colors.
+		 * If new text attributes have been supplied
+		 * (and not just foreground or background changed),
+		 * invalidate previous color and attribute settings.
+		 */
+		if (attributes.length > 0) {
+			s.append(NORMAL.ordinal()).append(';');
+		}
+
+		/*
+		 * Apply whatever attributes have been supplied except NORMAL:
 		 */
 		for (final TextAttribute attribute : attributes) {
-			s.append(attribute.ordinal()).append(';');
 			if (attribute == NORMAL) {
-				/*
-				 * Whenever a rest to default attributes (CSI 0 m) is requested,
-				 * also restore the default foreground and background.
-				 */
-				if (this.defaultForeground != null) {
-					s.append(30 + this.defaultForeground.ordinal()).append(';');
-				}
-				if (this.defaultBackground != null) {
-					s.append(40 + this.defaultBackground.ordinal()).append(';');
-				}
+				continue;
 			}
+			s.append(attribute.ordinal()).append(';');
 		}
-		if (foreground != null) {
-			s.append(30 + foreground.ordinal()).append(';');
+		final Color effectiveForeground = foreground != null
+				? foreground
+				: this.lastForeground != null ? this.lastForeground : this.defaultForeground;
+		if (effectiveForeground != null) {
+			s.append(30 + effectiveForeground.ordinal()).append(';');
 		}
-		if (background != null) {
-			s.append(40 + background.ordinal()).append(';');
+		final Color effectiveBackground = background != null
+				? background
+				: this.lastBackground != null ? this.lastBackground : this.defaultBackground;
+		if (effectiveBackground != null) {
+			s.append(40 + effectiveBackground.ordinal()).append(';');
 		}
 
 		final int length = s.length();
