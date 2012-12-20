@@ -3,8 +3,14 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BLACK;
+import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
+import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
 import static com.google.code.synctimestamps.ui.terminal.Color.MAGENTA;
+import static com.google.code.synctimestamps.ui.terminal.Color.RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
+import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
 
 import java.util.List;
 
@@ -50,7 +56,19 @@ public final class TextAttributeHandler extends AbstractInputEventHandler {
 						term.clear();
 						for(final TextAttribute attribute : TextAttribute.values()) {
 							term.setTextAttributes(MAGENTA, WHITE, attribute);
-							term.println("The quick brown fox jumps over a lazy dog");
+							term.println(attribute + "\t: Magenta on White");
+						}
+						for(final TextAttribute attribute : TextAttribute.values()) {
+							term.setTextAttributes(RED, BLACK, attribute);
+							term.println(attribute + "\t: Red on Black");
+						}
+						for(final TextAttribute attribute : TextAttribute.values()) {
+							term.setTextAttributes(YELLOW, GREEN, attribute);
+							term.println(attribute + "\t: Yellow on Green");
+						}
+						for(final TextAttribute attribute : TextAttribute.values()) {
+							term.setTextAttributes(BLUE, CYAN, attribute);
+							term.println(attribute + "\t: Blue on Cyan");
 						}
 						term.flush();
 					}
