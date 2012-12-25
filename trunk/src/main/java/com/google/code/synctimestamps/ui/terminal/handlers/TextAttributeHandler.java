@@ -11,9 +11,17 @@ import static com.google.code.synctimestamps.ui.terminal.Color.MAGENTA;
 import static com.google.code.synctimestamps.ui.terminal.Color.RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BLINK;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BLINK_RAPID;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
+import java.util.EnumSet;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
@@ -54,26 +62,35 @@ public final class TextAttributeHandler extends AbstractInputEventHandler {
 					@Override
 					public void run() {
 						term.clear();
-						for(final TextAttribute attribute : TextAttribute.values()) {
-							term.setTextAttributes(MAGENTA, WHITE, attribute);
-							term.println(attribute + "\t: Magenta on White");
-						}
-						for(final TextAttribute attribute : TextAttribute.values()) {
-							term.setTextAttributes(RED, BLACK, attribute);
-							term.println(attribute + "\t: Red on Black");
-						}
-						for(final TextAttribute attribute : TextAttribute.values()) {
-							term.setTextAttributes(YELLOW, GREEN, attribute);
-							term.println(attribute + "\t: Yellow on Green");
-						}
-						for(final TextAttribute attribute : TextAttribute.values()) {
-							term.setTextAttributes(BLUE, CYAN, attribute);
-							term.println(attribute + "\t: Blue on Cyan");
-						}
+						testColorPair(term, MAGENTA, WHITE);
+						testColorPair(term, RED, BLACK);
+						testColorPair(term, YELLOW, GREEN);
+						testColorPair(term, BLUE, CYAN);
 						term.flush();
 					}
 				});
 			}
+		}
+	}
+
+	/**
+	 * @param term
+	 * @param foreground
+	 * @param background
+	 */
+	static void testColorPair(@Nonnull final Terminal term,
+			@Nonnull final Color foreground,
+			@Nonnull final Color background) {
+		final EnumSet<TextAttribute> attributes = EnumSet.of(NORMAL, BOLD, BLINK, BLINK_RAPID);
+		for(final TextAttribute attribute : attributes) {
+			term.setTextAttributes(foreground, background, attribute);
+			term.println(attribute + "\t: " + foreground + " on " + background);
+		}
+		for(final TextAttribute attribute : attributes) {
+			term.setTextAttributes(attribute);
+			term.setBrightForeground(foreground);
+			term.setBrightBackground(background);
+			term.println(attribute + "\t: " + foreground + " on " + background);
 		}
 	}
 

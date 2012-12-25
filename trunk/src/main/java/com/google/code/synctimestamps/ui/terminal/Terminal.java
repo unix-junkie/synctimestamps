@@ -426,6 +426,44 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
+	 * @param foreground
+	 */
+	public Terminal setBrightForeground(@Nonnull final Color foreground) {
+		/*
+		 * Fall back to defaults in case AIX colours are not supported.
+		 */
+		this.setForeground(foreground);
+
+		final StringBuilder s = new StringBuilder();
+		s.append(90 + foreground.ordinal());
+
+		this.printCsi();
+		this.print(s);
+		this.print('m');
+
+		return this;
+	}
+
+	/**
+	 * @param background
+	 */
+	public Terminal setBrightBackground(@Nonnull final Color background) {
+		/*
+		 * Fall back to defaults in case AIX colours are not supported.
+		 */
+		this.setBackground(background);
+
+		final StringBuilder s = new StringBuilder();
+		s.append(100 + background.ordinal());
+
+		this.printCsi();
+		this.print(s);
+		this.print('m');
+
+		return this;
+	}
+
+	/**
 	 * @param title
 	 */
 	public Terminal setTitle(@Nullable final String title) {
