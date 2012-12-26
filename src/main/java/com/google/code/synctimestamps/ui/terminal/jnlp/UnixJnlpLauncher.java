@@ -4,7 +4,6 @@
 package com.google.code.synctimestamps.ui.terminal.jnlp;
 
 import static java.lang.Boolean.getBoolean;
-import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
 import static java.lang.System.setProperty;
@@ -23,10 +22,15 @@ import com.google.code.synctimestamps.ui.terminal.Application;
  * @version $Revision$, $Date$
  */
 public final class UnixJnlpLauncher implements JnlpLauncher {
-	private static final String XTERM_PATHS[][] = {
-		{"xterm", "-T", null, "-n", null, "-e", null},
-		{"/usr/X11/bin/xterm", "-T", null, "-n", null, "-e", null},
-	};
+	private final UnixTerminalProvider terminalProvider;
+
+	public UnixJnlpLauncher() {
+		this(new XtermProvider());
+	}
+
+	public UnixJnlpLauncher(final UnixTerminalProvider terminalProvider) {
+		this.terminalProvider = terminalProvider;
+	}
 
 	/**
 	 * @see JnlpLauncher#launchTerminalEmulator(Application)
@@ -92,7 +96,7 @@ public final class UnixJnlpLauncher implements JnlpLauncher {
 		shellScript.setExecutable(true);
 		shellScript.deleteOnExit();
 
-		return newTerminalProcess(application.getWindowTitle(), application.getIconName(), shellScript.getPath());
+		return this.terminalProvider.newTerminalProcess(application.getWindowTitle(), application.getIconName(), shellScript.getPath());
 	}
 
 	/**
@@ -105,26 +109,5 @@ public final class UnixJnlpLauncher implements JnlpLauncher {
 		 * once the child process terminates.
 		 */
 		return true;
-	}
-
-	/**
-	 * @param title
-	 * @param iconName
-	 * @param program
-	 */
-	private static Process newTerminalProcess(final String title, final String iconName, final String program) {
-		for (final String xtermPath[] : XTERM_PATHS) {
-			try {
-				assert xtermPath.length == 7 : xtermPath.length;
-				xtermPath[2] = title;
-				xtermPath[4] = iconName;
-				xtermPath[6] = program;
-				final Process terminalProcess = getRuntime().exec(xtermPath);
-				return terminalProcess;
-			} catch (final IOException ioe) {
-				continue;
-			}
-		}
-		return null;
 	}
 }
