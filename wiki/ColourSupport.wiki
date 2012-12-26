@@ -1,1 +1,3 @@
+=Comparison of Terminal Emulators: Colour Support=
+
 <wiki:gadget url = "https://synctimestamps.googlecode.com/svn/trunk/src/site/resources/colour-support.xml" width = "800" height = "600" border = "0"/> 
