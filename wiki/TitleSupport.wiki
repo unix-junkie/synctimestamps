@@ -1,0 +1,1 @@
+<wiki:gadget url = "https://synctimestamps.googlecode.com/svn/trunk/src/site/resources/title-support.xml" width = "800" height = "600" border = "0"/> 
