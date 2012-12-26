@@ -1,0 +1,6 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!-- $Id$ -->
+<Module>
+	<ModulePrefs title = "Comparison of Terminal Emulators: Title Support"/>
+	<Content type = "url" href = "https://synctimestamps.googlecode.com/svn/trunk/src/site/resources/Comparison%20of%20Terminal%20Emulators%20-%20Title%20Support.html"/>
+</Module>
