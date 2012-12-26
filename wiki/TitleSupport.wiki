@@ -1,1 +1,3 @@
+=Comparison of Terminal Emulators: Title Support=
+
 <wiki:gadget url = "https://synctimestamps.googlecode.com/svn/trunk/src/site/resources/title-support.xml" width = "1024" height = "768" border = "0"/> 
