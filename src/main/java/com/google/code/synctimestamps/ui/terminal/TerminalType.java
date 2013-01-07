@@ -71,6 +71,8 @@ public enum TerminalType {
 	RXVT("rxvt"),
 	RXVT_UNICODE("rxvt-unicode"),
 	RXVT_UNICODE_256COLOR("rxvt-unicode-256color"),
+	RXVT_CYGWIN("rxvt-cygwin"),
+	RXVT_CYGWIN_NATIVE("rxvt-cygwin-native"),
 	SCOANSI("scoansi"),
 	SCREEN("screen", OLD_STYLE),
 	SCREEN_LINUX("screen.linux") {
@@ -333,6 +335,8 @@ public enum TerminalType {
 		case RXVT:
 		case RXVT_UNICODE:
 		case RXVT_UNICODE_256COLOR:
+		case RXVT_CYGWIN:
+		case RXVT_CYGWIN_NATIVE:
 		case KTERM:
 			this.registerOldFunctionKeys();
 			this.registerAnsiFunctionKeys();

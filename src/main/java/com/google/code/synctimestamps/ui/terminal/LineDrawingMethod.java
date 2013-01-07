@@ -53,6 +53,8 @@ public enum LineDrawingMethod {
 			case DTTERM:
 			case KTERM:
 			case RXVT:
+			case RXVT_CYGWIN:
+			case RXVT_CYGWIN_NATIVE:
 			case SUN_CMD:
 			case SUN_COLOR:
 			default:
@@ -125,6 +127,7 @@ public enum LineDrawingMethod {
 			case RXVT:
 			case RXVT_UNICODE:
 			case RXVT_UNICODE_256COLOR:
+			case RXVT_CYGWIN:
 			case SCREEN:
 			case SCREEN_LINUX:
 			case VT320:
@@ -142,6 +145,7 @@ public enum LineDrawingMethod {
 			case VT52:
 			case VT100:
 			case VTNT:
+			case RXVT_CYGWIN_NATIVE:
 			default:
 				return false;
 			}
