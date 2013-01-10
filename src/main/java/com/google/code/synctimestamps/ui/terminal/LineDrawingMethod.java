@@ -137,7 +137,7 @@ public enum LineDrawingMethod {
 			case XTERM_256COLOR:
 			case CYGWIN:
 				return true;
-			case ANSI:
+			case ANSI: // Neither telnet.exe nor HyperTerminal on Windows support this.
 			case LINUX:
 			case SCOANSI:
 			case SUN_CMD:
