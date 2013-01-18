@@ -3,10 +3,9 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
-import static com.google.code.synctimestamps.ui.terminal.Color.RED;
-import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 /**
@@ -29,16 +28,16 @@ public abstract class VtResponse implements VtKeyOrResponse {
 	 */
 	@Override
 	public final void toString(final Terminal term) {
-		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
 		term.print('[');
 
 		/*
 		 * White on cyan.
 		 */
-		term.setTextAttributes(WHITE, CYAN, BOLD);
+		term.setTextAttributes(BRIGHT_WHITE, CYAN);
 		this.appendDescription(term);
 
-		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
 		term.print(']');
 		term.setTextAttributes(NORMAL);
 	}

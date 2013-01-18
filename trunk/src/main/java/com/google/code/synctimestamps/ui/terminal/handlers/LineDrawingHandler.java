@@ -4,12 +4,11 @@
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
 import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_GREEN;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_YELLOW;
 import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
-import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
-import static com.google.code.synctimestamps.ui.terminal.Color.RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
-import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 import java.io.UnsupportedEncodingException;
@@ -212,7 +211,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param term
 	 */
 	static void lineDrawingUnicode(final Terminal term) {
-		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.setTextAttributes(BRIGHT_YELLOW, BLUE);
 		term.println("Unicode line-drawing characters:");
 
 		term.setTextAttributes(CYAN, BLUE, NORMAL);
@@ -233,10 +232,10 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @see <a href = "http://www.in-ulm.de/~mascheck/various/alternate_charset/">http://www.in-ulm.de/~mascheck/various/alternate_charset/</a>
 	 */
 	static void lineDrawingVt100(final Terminal term) {
-		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.setTextAttributes(BRIGHT_YELLOW, BLUE);
 		term.println("VT100 alternate character set:");
 
-		term.setTextAttributes(CYAN, BLUE, NORMAL);
+		term.setTextAttributes(CYAN, BLUE);
 		term.startAlternateCs();
 		for (char i = 0x60; i <= 0x70; ) {
 			for (char j = 0x0; j <= 0xf; j++) {
@@ -260,10 +259,10 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param term
 	 */
 	static void lineDrawingSunColor(final Terminal term) {
-		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.setTextAttributes(BRIGHT_YELLOW, BLUE);
 		term.println("sun-color line-drawing characters:");
 
-		term.setTextAttributes(CYAN, BLUE, NORMAL);
+		term.setTextAttributes(CYAN, BLUE);
 		term.println(getSunColorContents());
 
 		term.setTextAttributes(NORMAL);
@@ -305,14 +304,14 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 	 * @param charsetName
 	 */
 	private static void dumpCodepage(final Terminal term, final String charsetName) {
-		term.setTextAttributes(YELLOW, BLUE, BOLD);
+		term.setTextAttributes(BRIGHT_YELLOW, BLUE);
 		term.println(charsetName + " line-drawing characters:");
 
 		final String chars = getEightBitContents(charsetName);
 		for (int i = 0x00; i <= 0xf0; ) {
-			term.setTextAttributes(GREEN, BLUE, BOLD);
+			term.setTextAttributes(BRIGHT_GREEN, BLUE);
 			term.print(toHexString(i, 2, true));
-			term.setTextAttributes(CYAN, BLUE, NORMAL);
+			term.setTextAttributes(CYAN, BLUE);
 			for (int j = 0x0; j <= 0xf; j++) {
 				if (j != 0) {
 					term.print("    ");
@@ -323,7 +322,7 @@ public final class LineDrawingHandler extends AbstractInputEventHandler {
 
 			for (int j = 0x0; j <= 0xf; j++) {
 				final boolean emphasize = chars.charAt(i + j) > 0xff;
-				term.setTextAttributes(emphasize ? RED : WHITE, BLUE, emphasize ? BOLD : NORMAL);
+				term.setTextAttributes(emphasize ? BRIGHT_RED : WHITE, BLUE);
 				term.print(' ');
 				term.print(toHexString(chars.charAt(i + j), 4, false));
 			}

@@ -3,10 +3,13 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.AIXTERM;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.ASCII;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.VT100_LINES;
 import static com.google.code.synctimestamps.ui.terminal.TerminalType.safeValueOf;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BLINK;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
@@ -25,6 +28,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -106,7 +110,7 @@ public final class Terminal extends PrintWriter {
 	 */
 	protected Terminal(final String term, final InputEventHandler handler, final String ttyName)
 	throws FileNotFoundException, UnsupportedEncodingException {
-		super(ttyName, getTerminalEncoding(term));
+		super(ttyName, getEncoding(safeValueOf(term)));
 		this.type = safeValueOf(term);
 		this.in = new FileReader(ttyName);
 
@@ -130,7 +134,7 @@ public final class Terminal extends PrintWriter {
 	 */
 	protected Terminal(final String term, final InputEventHandler handler, final InputStream in, final OutputStream out)
 	throws UnsupportedEncodingException {
-		super(new OutputStreamWriter(out, getTerminalEncoding(term)));
+		super(new OutputStreamWriter(out, getEncoding(safeValueOf(term))));
 		this.type = safeValueOf(term);
 		this.in = new InputStreamReader(in);
 
@@ -380,37 +384,58 @@ public final class Terminal extends PrintWriter {
 			this.lastBackground = background;
 		}
 
+		final Color effectiveForeground = foreground != null
+				? foreground
+				: this.lastForeground != null ? this.lastForeground : this.defaultForeground;
+		final Color effectiveBackground = background != null
+				? background
+				: this.lastBackground != null ? this.lastBackground : this.defaultBackground;
+
+		final Set<TextAttribute> effectiveAttributes = attributes.length == 0
+				? EnumSet.noneOf(TextAttribute.class)
+				: EnumSet.copyOf(asList(attributes));
+		if (effectiveForeground != null && effectiveForeground.isBright()) {
+			effectiveAttributes.add(BOLD);
+		}
+		if (effectiveBackground != null && effectiveBackground.isBright()
+				&& this.type.getBrightBackgroundSupport() == BrightBackgroundSupport.BLINK) {
+			effectiveAttributes.add(BLINK);
+		}
+
 		final StringBuilder s = new StringBuilder();
 
 		/*
 		 * If new text attributes have been supplied
 		 * (and not just foreground or background changed),
 		 * invalidate previous color and attribute settings.
+		 *
+		 * Also, invalidate previous settings if current
+		 * foreground color is a dark one (so we may need
+		 * to reset the BOLD flag)
 		 */
-		if (attributes.length > 0) {
+		if (!effectiveAttributes.isEmpty() || effectiveForeground != null && effectiveForeground.isDark()) {
 			s.append(NORMAL.ordinal()).append(';');
 		}
 
 		/*
 		 * Apply whatever attributes have been supplied except NORMAL:
 		 */
-		for (final TextAttribute attribute : attributes) {
+		for (final TextAttribute attribute : effectiveAttributes) {
 			if (attribute == NORMAL) {
 				continue;
 			}
 			s.append(attribute.ordinal()).append(';');
 		}
-		final Color effectiveForeground = foreground != null
-				? foreground
-				: this.lastForeground != null ? this.lastForeground : this.defaultForeground;
+
 		if (effectiveForeground != null) {
-			s.append(30 + effectiveForeground.ordinal()).append(';');
+			s.append(30 + effectiveForeground.darker().ordinal()).append(';');
 		}
-		final Color effectiveBackground = background != null
-				? background
-				: this.lastBackground != null ? this.lastBackground : this.defaultBackground;
 		if (effectiveBackground != null) {
-			s.append(40 + effectiveBackground.ordinal()).append(';');
+			s.append(40 + effectiveBackground.darker().ordinal()).append(';');
+			if (effectiveBackground.isBright()
+					&& this.type.getBrightBackgroundSupport() == AIXTERM) {
+				s.append(100 + effectiveBackground.darker().ordinal()).append(';');
+			}
 		}
 
 		final int length = s.length();
@@ -435,26 +460,7 @@ public final class Terminal extends PrintWriter {
 		this.setForeground(foreground);
 
 		final StringBuilder s = new StringBuilder();
-		s.append(90 + foreground.ordinal());
-
-		this.printCsi();
-		this.print(s);
-		this.print('m');
-
-		return this;
-	}
-
-	/**
-	 * @param background
-	 */
-	public Terminal setBrightBackground(@Nonnull final Color background) {
-		/*
-		 * Fall back to defaults in case AIX colours are not supported.
-		 */
-		this.setBackground(background);
-
-		final StringBuilder s = new StringBuilder();
-		s.append(100 + background.ordinal());
+		s.append(90 + foreground.darker().ordinal());
 
 		this.printCsi();
 		this.print(s);
@@ -647,14 +653,14 @@ public final class Terminal extends PrintWriter {
 	}
 
 	String getEncoding() {
-		return getTerminalEncoding(this.type.term);
+		return getEncoding(this.type);
 	}
 
 	/**
 	 * @param term
 	 */
-	private static String getTerminalEncoding(final String term) {
-		switch (safeValueOf(term)) {
+	private static String getEncoding(final TerminalType type) {
+		switch (type) {
 		case SUN_COLOR:
 			return "ISO8859-1";
 		case VTNT:

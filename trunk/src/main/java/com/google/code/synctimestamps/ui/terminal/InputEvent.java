@@ -3,10 +3,9 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
-import static com.google.code.synctimestamps.ui.terminal.Color.RED;
-import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public final class InputEvent implements CharSequence {
 		 * Try to exclude most of the control characters.
 		 */
 		if (0 <= c && c <= 31) {
-			term.setTextAttributes(WHITE, GREEN, BOLD);
+			term.setTextAttributes(BRIGHT_WHITE, GREEN);
 
 			/*
 			 * Those definitely are the control characters.
@@ -80,7 +79,7 @@ public final class InputEvent implements CharSequence {
 				break;
 			}
 		} else if (c == DELETE) {
-			term.setTextAttributes(WHITE, GREEN, BOLD);
+			term.setTextAttributes(BRIGHT_WHITE, GREEN);
 
 			term.print((int) c);
 			term.print("/Delete");
@@ -88,6 +87,8 @@ public final class InputEvent implements CharSequence {
 			/*
 			 * Most probably, alphanumeric or punctuation.
 			 */
+			term.restoreDefaultForeground().restoreDefaultBackground();
+
 			term.print(c);
 		}
 	}
@@ -127,7 +128,7 @@ public final class InputEvent implements CharSequence {
 		/*
 		 * Fallback implementation.
 		 */
-		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
 		term.print('[');
 		term.setTextAttributes(NORMAL);
 
@@ -142,7 +143,7 @@ public final class InputEvent implements CharSequence {
 			term.print(' ');
 		}
 
-		term.setTextAttributes(BOLD).setForeground(RED).restoreDefaultBackground();
+		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
 		term.print(']');
 		term.setTextAttributes(NORMAL);
 	}
