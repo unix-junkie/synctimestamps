@@ -5,18 +5,22 @@ package com.google.code.synctimestamps.ui.terminal.handlers;
 
 import static com.google.code.synctimestamps.ui.terminal.Color.BLACK;
 import static com.google.code.synctimestamps.ui.terminal.Color.BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_BLACK;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_BLUE;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_CYAN;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_GREEN;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_MAGENTA;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_WHITE;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_YELLOW;
 import static com.google.code.synctimestamps.ui.terminal.Color.CYAN;
 import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
 import static com.google.code.synctimestamps.ui.terminal.Color.MAGENTA;
 import static com.google.code.synctimestamps.ui.terminal.Color.RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.YELLOW;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BLINK;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BLINK_RAPID;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
-import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -25,7 +29,6 @@ import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
-import com.google.code.synctimestamps.ui.terminal.TextAttribute;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -63,9 +66,21 @@ public final class TextAttributeHandler extends AbstractInputEventHandler {
 					public void run() {
 						term.clear();
 						testColorPair(term, MAGENTA, WHITE);
+						testColorPair(term, BRIGHT_MAGENTA, WHITE);
+						testColorPair(term, MAGENTA, BRIGHT_WHITE);
+						testColorPair(term, BRIGHT_MAGENTA, BRIGHT_WHITE);
 						testColorPair(term, RED, BLACK);
+						testColorPair(term, BRIGHT_RED, BLACK);
+						testColorPair(term, RED, BRIGHT_BLACK);
+						testColorPair(term, BRIGHT_RED, BRIGHT_BLACK);
 						testColorPair(term, YELLOW, GREEN);
+						testColorPair(term, BRIGHT_YELLOW, GREEN);
+						testColorPair(term, YELLOW, BRIGHT_GREEN);
+						testColorPair(term, BRIGHT_YELLOW, BRIGHT_GREEN);
 						testColorPair(term, BLUE, CYAN);
+						testColorPair(term, BRIGHT_BLUE, CYAN);
+						testColorPair(term, BLUE, BRIGHT_CYAN);
+						testColorPair(term, BRIGHT_BLUE, BRIGHT_CYAN);
 						term.flush();
 					}
 				});
@@ -81,16 +96,15 @@ public final class TextAttributeHandler extends AbstractInputEventHandler {
 	static void testColorPair(@Nonnull final Terminal term,
 			@Nonnull final Color foreground,
 			@Nonnull final Color background) {
-		final EnumSet<TextAttribute> attributes = EnumSet.of(NORMAL, BOLD, BLINK, BLINK_RAPID);
-		for(final TextAttribute attribute : attributes) {
-			term.setTextAttributes(foreground, background, attribute);
-			term.println(attribute + "\t: " + foreground + " on " + background);
-		}
-		for(final TextAttribute attribute : attributes) {
-			term.setTextAttributes(attribute);
+		term.setTextAttributes(foreground, background);
+		term.println(foreground + " on " + background);
+
+		if (foreground.isDark()) {
 			term.setBrightForeground(foreground);
-			term.setBrightBackground(background);
-			term.println(attribute + "\t: " + foreground + " on " + background);
+			term.println(foreground.brighter() + " on " + background + " (via AIXTerm sequences)");
+
+			term.setTextAttributes(BOLD);
+			term.println(foreground.brighter() + " on " + background + " (via AIXTerm sequences and bold attribute)");
 		}
 	}
 

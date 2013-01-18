@@ -3,11 +3,10 @@
  */
 package com.google.code.synctimestamps.ui.terminal.handlers;
 
-import static com.google.code.synctimestamps.ui.terminal.Color.BLACK;
-import static com.google.code.synctimestamps.ui.terminal.Color.RED;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_BLACK;
+import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Dimension.UNDEFINED;
-import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 import static com.google.code.synctimestamps.ui.terminal.handlers.Handlers.asTerminalSizeProvider;
 import static java.lang.Boolean.getBoolean;
@@ -135,9 +134,9 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 									 */
 									@Override
 									public void run() {
-										term.setTextAttributes(RED, WHITE, BOLD);
+										term.setTextAttributes(BRIGHT_RED, WHITE);
 										term.print("DEBUG:");
-										term.setTextAttributes(BLACK, WHITE, BOLD);
+										term.setTextAttributes(BRIGHT_BLACK, WHITE);
 										term.println(" Terminal size of " + terminalSize1 + " reported " + (t1 - t0Snapshot) + " ms after the request.");
 										term.setTextAttributes(NORMAL);
 										term.flush();
@@ -262,9 +261,9 @@ public final class FilteringTerminalSizeHandler extends AbstractInputEventHandle
 										 */
 										@Override
 										public void run() {
-											term.setTextAttributes(RED, WHITE, BOLD);
+											term.setTextAttributes(BRIGHT_RED, WHITE);
 											term.print("DEBUG:");
-											term.setTextAttributes(BLACK, WHITE, BOLD);
+											term.setTextAttributes(BRIGHT_BLACK, WHITE);
 											term.println(" Timed out waiting for terminal size for " + FilteringTerminalSizeHandler.this.expectingTimeoutMillis + " ms.");
 											term.setTextAttributes(NORMAL);
 											term.flush();

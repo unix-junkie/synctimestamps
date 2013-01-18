@@ -10,7 +10,6 @@ import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.InputEvent;
 import com.google.code.synctimestamps.ui.terminal.InputEventHandler;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
-import com.google.code.synctimestamps.ui.terminal.TextAttribute;
 import com.google.code.synctimestamps.ui.terminal.wt.RootWindow;
 
 /**
@@ -47,8 +46,7 @@ public final class WtHandler extends AbstractInputEventHandler {
 					@Override
 					public void run() {
 						try {
-							final RootWindow rootWindow = new RootWindow(term, null, Color.GREEN, Color.BLUE, Color.CYAN);
-							rootWindow.setBorderAttributes(TextAttribute.BOLD);
+							final RootWindow rootWindow = new RootWindow(term, null, Color.GREEN, Color.BLUE, Color.BRIGHT_CYAN);
 							rootWindow.paint();
 						} catch (final Throwable t) {
 							term.clear();

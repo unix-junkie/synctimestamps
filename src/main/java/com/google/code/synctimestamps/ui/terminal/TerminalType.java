@@ -3,6 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.AIXTERM;
+import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.BLINK;
 import static com.google.code.synctimestamps.ui.terminal.Dimension._80X24;
 import static com.google.code.synctimestamps.ui.terminal.Dimension._80X25;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
@@ -45,128 +47,32 @@ import com.google.common.base.Function;
  * @version $Revision$, $Date$
  */
 public enum TerminalType {
-	ANSI("ansi", NONE) {
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	DTTERM("dtterm", OLD_STYLE),
+	ANSI(			"ansi",				false,	BrightBackgroundSupport.NONE,	NONE),
+	DTTERM(			"dtterm",								OLD_STYLE),
 	/**
 	 * SunOS rxvt reports TERM=kterm.
 	 */
-	KTERM("kterm", OLD_STYLE),
-	LINUX("linux", NONE) {
-		/**
-		 * @see TerminalType#getDefaultSize()
-		 */
-		@Override
-		public Dimension getDefaultSize() {
-			return _80X25;
-		}
-	},
-	RXVT("rxvt"),
-	RXVT_UNICODE("rxvt-unicode"),
-	RXVT_UNICODE_256COLOR("rxvt-unicode-256color"),
-	RXVT_CYGWIN("rxvt-cygwin"),
-	RXVT_CYGWIN_NATIVE("rxvt-cygwin-native"),
-	SCOANSI("scoansi"),
-	SCREEN("screen", OLD_STYLE),
-	SCREEN_LINUX("screen.linux") {
-		/**
-		 * @see TerminalType#getDefaultSize()
-		 */
-		@Override
-		public Dimension getDefaultSize() {
-			return _80X25;
-		}
-	},
-	SUN_CMD("sun-cmd") {
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	SUN_COLOR("sun-color", NONE) {
-		/**
-		 * @see TerminalType#getDefaultSize()
-		 */
-		@Override
-		public Dimension getDefaultSize() {
-			return _80X25;
-		}
-
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	VT52("vt52", NONE) {
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	VT100("vt100", NONE) {
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	VT320("vt320", NONE),
-	VTNT("vtnt", NONE) {
-		/**
-		 * @see TerminalType#getDefaultSize()
-		 */
-		@Override
-		public Dimension getDefaultSize() {
-			return _80X25;
-		}
-
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
-	XTERM("xterm"),
-	XTERM_COLOR("xterm-color"),
-	XTERM_16COLOR("xterm-16color"),
-	XTERM_256COLOR("xterm-256color"),
-	CYGWIN("cygwin", OLD_STYLE) {
-		/**
-		 * @see TerminalType#getDefaultSize()
-		 */
-		@Override
-		public Dimension getDefaultSize() {
-			return _80X25;
-		}
-
-		/**
-		 * @see TerminalType#canUpdateLowerRightCell()
-		 */
-		@Override
-		public boolean canUpdateLowerRightCell() {
-			return false;
-		}
-	},
+	KTERM(			"kterm",					BLINK,				OLD_STYLE),
+	LINUX(			"linux",			_80X25,		BLINK,				NONE),
+	RXVT(			"rxvt",					BLINK),
+	RXVT_UNICODE(		"rxvt-unicode",				BLINK),
+	RXVT_UNICODE_256COLOR(	"rxvt-unicode-256color",			BLINK),
+	RXVT_CYGWIN(		"rxvt-cygwin",				BLINK),
+	RXVT_CYGWIN_NATIVE(	"rxvt-cygwin-native",			BLINK),
+	SCOANSI(			"scoansi"),
+	SCREEN(			"screen",								OLD_STYLE),
+	SCREEN_LINUX(		"screen.linux",		_80X25,		BLINK),
+	SUN_CMD(			"sun-cmd",			false),
+	SUN_COLOR(		"sun-color",		_80X25,	false,					NONE),
+	VT52(			"vt52",				false,	BrightBackgroundSupport.NONE,	NONE),
+	VT100(			"vt100",				false,	BrightBackgroundSupport.NONE,	NONE),
+	VT320(			"vt320",									NONE),
+	VTNT(			"vtnt",			_80X25,	false,	BrightBackgroundSupport.NONE,	NONE),
+	XTERM(			"xterm"),
+	XTERM_COLOR(		"xterm-color"),
+	XTERM_16COLOR(		"xterm-16color"),
+	XTERM_256COLOR(		"xterm-256color"),
+	CYGWIN(			"cygwin",		_80X25,	false,	BLINK,				OLD_STYLE),
 	;
 
 	static {
@@ -180,7 +86,13 @@ public enum TerminalType {
 		}
 	}
 
-	final String term;
+	private final String term;
+
+	private final Dimension defaultSize;
+
+	private final boolean canUpdateLowerRightCell;
+
+	private final BrightBackgroundSupport brightBackgroundSupport;
 
 	private final TitleWriter titleWriter;
 
@@ -229,15 +141,113 @@ public enum TerminalType {
 	 * @param term
 	 */
 	private TerminalType(final String term) {
-		this(term, TitleWriter.ANSI);
+		this(term, _80X24, true, AIXTERM, TitleWriter.ANSI);
+	}
+
+	/**
+	 * @param term
+	 * @param canUpdateLowerRightCell
+	 */
+	private TerminalType(final String term,
+			final boolean canUpdateLowerRightCell) {
+		this(term, _80X24, canUpdateLowerRightCell, AIXTERM, TitleWriter.ANSI);
+	}
+
+	/**
+	 * @param term
+	 * @param brightBackgroundSupport
+	 */
+	private TerminalType(final String term,
+			final BrightBackgroundSupport brightBackgroundSupport) {
+		this(term, _80X24, brightBackgroundSupport);
+	}
+
+	/**
+	 * @param term
+	 * @param defaultSize
+	 * @param brightBackgroundSupport
+	 */
+	private TerminalType(final String term,
+			final Dimension defaultSize,
+			final BrightBackgroundSupport brightBackgroundSupport) {
+		this(term, defaultSize, true, brightBackgroundSupport, TitleWriter.ANSI);
 	}
 
 	/**
 	 * @param term
 	 * @param titleWriter
 	 */
-	private TerminalType(final String term, final TitleWriter titleWriter) {
+	private TerminalType(final String term,
+			final TitleWriter titleWriter) {
+		this(term, _80X24, true, AIXTERM, titleWriter);
+	}
+
+	/**
+	 * @param term
+	 * @param defaultSize
+	 * @param canUpdateLowerRightCell
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term,
+			final Dimension defaultSize,
+			final boolean canUpdateLowerRightCell,
+			final TitleWriter titleWriter) {
+		this(term, defaultSize, canUpdateLowerRightCell, AIXTERM, titleWriter);
+	}
+
+	/**
+	 * @param term
+	 * @param brightBackgroundSupport
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term,
+			final BrightBackgroundSupport brightBackgroundSupport,
+			final TitleWriter titleWriter) {
+		this(term, _80X24, brightBackgroundSupport, titleWriter);
+	}
+
+	/**
+	 * @param term
+	 * @param defaultSize
+	 * @param brightBackgroundSupport
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term,
+			final Dimension defaultSize,
+			final BrightBackgroundSupport brightBackgroundSupport,
+			final TitleWriter titleWriter) {
+		this(term, defaultSize, true, brightBackgroundSupport, titleWriter);
+	}
+
+	/**
+	 * @param term
+	 * @param canUpdateLowerRightCell
+	 * @param brightBackgroundSupport
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term,
+			final boolean canUpdateLowerRightCell,
+			final BrightBackgroundSupport brightBackgroundSupport,
+			final TitleWriter titleWriter) {
+		this(term, _80X24, canUpdateLowerRightCell, brightBackgroundSupport, titleWriter);
+	}
+
+	/**
+	 * @param term
+	 * @param defaultSize
+	 * @param canUpdateLowerRightCell
+	 * @param brightBackgroundSupport
+	 * @param titleWriter
+	 */
+	private TerminalType(final String term,
+			final Dimension defaultSize,
+			final boolean canUpdateLowerRightCell,
+			final BrightBackgroundSupport brightBackgroundSupport,
+			final TitleWriter titleWriter) {
 		this.term = term;
+		this.defaultSize = defaultSize;
+		this.canUpdateLowerRightCell = canUpdateLowerRightCell;
+		this.brightBackgroundSupport = brightBackgroundSupport;
 		this.titleWriter = titleWriter;
 	}
 
@@ -298,6 +308,7 @@ public enum TerminalType {
 			this.registerLinuxFunctionKeys();
 			//$FALL-THROUGH$
 		case ANSI:
+		case SCREEN:
 		case SCREEN_LINUX:
 		case VTNT:
 			this.registerAnsiFunctionKeys();
@@ -586,8 +597,8 @@ public enum TerminalType {
 	 * @return the default size for this terminal type (useful in case
 	 *         an attempt to determine one programmatically failed)
 	 */
-	public Dimension getDefaultSize() {
-		return _80X24;
+	public final Dimension getDefaultSize() {
+		return this.defaultSize;
 	}
 
 	/**
@@ -595,8 +606,12 @@ public enum TerminalType {
 	 *         is "safe", i. e. doesn't cause the whole screen
 	 *         to scroll one line up.
 	 */
-	public boolean canUpdateLowerRightCell() {
-		return true;
+	public final boolean canUpdateLowerRightCell() {
+		return this.canUpdateLowerRightCell;
+	}
+
+	public BrightBackgroundSupport getBrightBackgroundSupport() {
+		return this.brightBackgroundSupport;
 	}
 
 	/**
