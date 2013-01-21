@@ -17,7 +17,7 @@ then
 	exit ${returnValue}
 else
 	stty -icanon min 1 time 0 -echo -icrnl intr undef flush undef start undef stop undef lnext undef dsusp undef susp undef quit undef
-	java -Dfile.encoding="`locale charmap`" -Dterminal.debug=false com.google.code.synctimestamps.ui.terminal.InputDemo ${tty}
+	java -client -d32 -Xmx6m -Dfile.encoding="`locale charmap`" -Dterminal.debug=false com.google.code.synctimestamps.ui.terminal.InputDemo ${tty}
 	returnValue=$?
 	stty sane 2>/dev/null
 	exit ${returnValue}
