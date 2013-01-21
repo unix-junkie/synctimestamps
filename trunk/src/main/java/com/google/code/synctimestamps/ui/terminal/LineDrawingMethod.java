@@ -71,6 +71,8 @@ public enum LineDrawingMethod {
 			case NONE:
 				return ' ';
 			case SINGLE:
+			case SINGLE_RAISED:
+			case SINGLE_LOWERED:
 				switch (character) {
 				case HORIZONTAL:
 					return BOX_DRAWINGS_LIGHT_HORIZONTAL.getCharacter();
@@ -87,6 +89,8 @@ public enum LineDrawingMethod {
 				}
 				break;
 			case DOUBLE:
+			case DOUBLE_RAISED:
+			case DOUBLE_LOWERED:
 				switch (character) {
 				case HORIZONTAL:
 					return BOX_DRAWINGS_DOUBLE_HORIZONTAL.getCharacter();
@@ -255,6 +259,8 @@ public enum LineDrawingMethod {
 			case NONE:
 				return ' ';
 			case SINGLE:
+			case SINGLE_RAISED:
+			case SINGLE_LOWERED:
 				switch (character) {
 				case HORIZONTAL:
 					return '-';
@@ -268,6 +274,8 @@ public enum LineDrawingMethod {
 				}
 				break;
 			case DOUBLE:
+			case DOUBLE_RAISED:
+			case DOUBLE_LOWERED:
 				switch (character) {
 				case HORIZONTAL:
 					return '=';
