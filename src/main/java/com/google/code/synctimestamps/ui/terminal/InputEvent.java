@@ -6,6 +6,7 @@ package com.google.code.synctimestamps.ui.terminal;
 import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_RED;
 import static com.google.code.synctimestamps.ui.terminal.Color.BRIGHT_WHITE;
 import static com.google.code.synctimestamps.ui.terminal.Color.GREEN;
+import static com.google.code.synctimestamps.ui.terminal.TextAttribute.BOLD;
 import static com.google.code.synctimestamps.ui.terminal.TextAttribute.NORMAL;
 
 import java.util.Arrays;
@@ -58,7 +59,7 @@ public final class InputEvent implements CharSequence {
 		 * Try to exclude most of the control characters.
 		 */
 		if (0 <= c && c <= 31) {
-			term.setTextAttributes(BRIGHT_WHITE, GREEN);
+			term.setTextAttributes(BRIGHT_WHITE, GREEN, BOLD);
 
 			/*
 			 * Those definitely are the control characters.
@@ -79,7 +80,7 @@ public final class InputEvent implements CharSequence {
 				break;
 			}
 		} else if (c == DELETE) {
-			term.setTextAttributes(BRIGHT_WHITE, GREEN);
+			term.setTextAttributes(BRIGHT_WHITE, GREEN, BOLD);
 
 			term.print((int) c);
 			term.print("/Delete");
@@ -128,7 +129,7 @@ public final class InputEvent implements CharSequence {
 		/*
 		 * Fallback implementation.
 		 */
-		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
+		term.setTextAttributes(BRIGHT_RED, term.getDefaultBackground(), BOLD);
 		term.print('[');
 		term.setTextAttributes(NORMAL);
 
@@ -143,7 +144,7 @@ public final class InputEvent implements CharSequence {
 			term.print(' ');
 		}
 
-		term.setForeground(BRIGHT_RED).restoreDefaultBackground();
+		term.setTextAttributes(BRIGHT_RED, term.getDefaultBackground(), BOLD);
 		term.print(']');
 		term.setTextAttributes(NORMAL);
 	}

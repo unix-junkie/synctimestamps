@@ -8,31 +8,31 @@ package com.google.code.synctimestamps.ui.terminal;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public enum BrightBackgroundSupport {
-	NONE(false, false),
+public enum BrightForegroundSupport {
+	BOLD_ONLY(true, false),
 	AIXTERM_ONLY(false, true),
-	BLINK_AND_AIXTERM(true, true),
+	BOLD_AND_AIXTERM(true, true),
 	;
 
-	private final boolean useBlink;
+	private final boolean useBold;
 
 	private final boolean useAixTerm;
 
 	private final boolean brightColorSupported;
 
 	/**
-	 * @param useBlink
+	 * @param useBold
 	 * @param useAixTerm
 	 */
-	private BrightBackgroundSupport(final boolean useBlink,
+	private BrightForegroundSupport(final boolean useBold,
 			final boolean useAixTerm) {
-		this.useBlink = useBlink;
+		this.useBold = useBold;
 		this.useAixTerm = useAixTerm;
-		this.brightColorSupported = useBlink || useAixTerm;
+		this.brightColorSupported = useBold || useAixTerm;
 	}
 
-	public boolean useBlink() {
-		return this.useBlink;
+	public boolean useBold() {
+		return this.useBold;
 	}
 
 	public boolean useAixTerm() {
