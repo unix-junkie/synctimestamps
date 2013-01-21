@@ -3,8 +3,10 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.AIXTERM;
-import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.BLINK;
+import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.BLINK_AND_AIXTERM;
+import static com.google.code.synctimestamps.ui.terminal.BrightForegroundSupport.AIXTERM_ONLY;
+import static com.google.code.synctimestamps.ui.terminal.BrightForegroundSupport.BOLD_AND_AIXTERM;
+import static com.google.code.synctimestamps.ui.terminal.BrightForegroundSupport.BOLD_ONLY;
 import static com.google.code.synctimestamps.ui.terminal.Dimension._80X24;
 import static com.google.code.synctimestamps.ui.terminal.Dimension._80X25;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
@@ -47,32 +49,32 @@ import com.google.common.base.Function;
  * @version $Revision$, $Date$
  */
 public enum TerminalType {
-	ANSI(			"ansi",				false,	BrightBackgroundSupport.NONE,	NONE),
-	DTTERM(			"dtterm",								OLD_STYLE),
+	ANSI(			"ansi",			_80X24,	false,	BOLD_ONLY,	BrightBackgroundSupport.NONE,	NONE),
+	DTTERM(			"dtterm",		_80X24,	true,	BOLD_AND_AIXTERM,	BrightBackgroundSupport.AIXTERM_ONLY,			OLD_STYLE),
 	/**
 	 * SunOS rxvt reports TERM=kterm.
 	 */
-	KTERM(			"kterm",					BLINK,				OLD_STYLE),
-	LINUX(			"linux",			_80X25,		BLINK,				NONE),
-	RXVT(			"rxvt",					BLINK),
-	RXVT_UNICODE(		"rxvt-unicode",				BLINK),
-	RXVT_UNICODE_256COLOR(	"rxvt-unicode-256color",			BLINK),
-	RXVT_CYGWIN(		"rxvt-cygwin",				BLINK),
-	RXVT_CYGWIN_NATIVE(	"rxvt-cygwin-native",			BLINK),
-	SCOANSI(			"scoansi"),
-	SCREEN(			"screen",								OLD_STYLE),
-	SCREEN_LINUX(		"screen.linux",		_80X25,		BLINK),
-	SUN_CMD(			"sun-cmd",			false),
-	SUN_COLOR(		"sun-color",		_80X25,	false,					NONE),
-	VT52(			"vt52",				false,	BrightBackgroundSupport.NONE,	NONE),
-	VT100(			"vt100",				false,	BrightBackgroundSupport.NONE,	NONE),
-	VT320(			"vt320",									NONE),
-	VTNT(			"vtnt",			_80X25,	false,	BrightBackgroundSupport.NONE,	NONE),
-	XTERM(			"xterm"),
-	XTERM_COLOR(		"xterm-color"),
-	XTERM_16COLOR(		"xterm-16color"),
-	XTERM_256COLOR(		"xterm-256color"),
-	CYGWIN(			"cygwin",		_80X25,	false,	BLINK,				OLD_STYLE),
+	KTERM(			"kterm",			_80X24,	true,	BOLD_AND_AIXTERM,	BLINK_AND_AIXTERM,			OLD_STYLE),
+	LINUX(			"linux",			_80X25,	true,	BOLD_AND_AIXTERM,	BLINK_AND_AIXTERM,			NONE),
+	RXVT(			"rxvt",			_80X24,	true,	BOLD_AND_AIXTERM,	BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	RXVT_UNICODE(		"rxvt-unicode",		_80X24,	true,	AIXTERM_ONLY,		BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	RXVT_UNICODE_256COLOR(	"rxvt-unicode-256color",	_80X24,	true,	AIXTERM_ONLY,		BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	RXVT_CYGWIN(		"rxvt-cygwin",		_80X24,	true,	AIXTERM_ONLY,		BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	RXVT_CYGWIN_NATIVE(	"rxvt-cygwin-native",	_80X24,	true,	AIXTERM_ONLY,		BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	SCOANSI(			"scoansi",		_80X24,	true,	AIXTERM_ONLY,		BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	SCREEN(			"screen",		_80X24,	true,	BOLD_AND_AIXTERM,	BrightBackgroundSupport.AIXTERM_ONLY,	OLD_STYLE),
+	SCREEN_LINUX(		"screen.linux",		_80X25,	true,	BOLD_AND_AIXTERM,	BLINK_AND_AIXTERM,			TitleWriter.ANSI),
+	SUN_CMD(			"sun-cmd",		_80X24,	false,	BOLD_AND_AIXTERM,	BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	SUN_COLOR(		"sun-color",		_80X25,	false,	BOLD_AND_AIXTERM,	BrightBackgroundSupport.AIXTERM_ONLY,	NONE),
+	VT52(			"vt52",			_80X24,	false,	BOLD_ONLY,		BrightBackgroundSupport.NONE,		NONE),
+	VT100(			"vt100",			_80X24,	false,	BOLD_ONLY,		BrightBackgroundSupport.NONE,		NONE),
+	VT320(			"vt320",			_80X24,	true,	BOLD_AND_AIXTERM,	BrightBackgroundSupport.AIXTERM_ONLY,	NONE),
+	VTNT(			"vtnt",			_80X25,	false,	BOLD_ONLY,		BrightBackgroundSupport.NONE,		NONE),
+	XTERM(			"xterm",			_80X24,	true,	AIXTERM_ONLY,		BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	XTERM_COLOR(		"xterm-color",		_80X24,	true,	AIXTERM_ONLY,		BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	XTERM_16COLOR(		"xterm-16color",		_80X24,	true,	AIXTERM_ONLY,		BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	XTERM_256COLOR(		"xterm-256color",	_80X24,	true,	AIXTERM_ONLY,		BrightBackgroundSupport.AIXTERM_ONLY,	TitleWriter.ANSI),
+	CYGWIN(			"cygwin",		_80X25,	false,	BOLD_AND_AIXTERM,	BLINK_AND_AIXTERM,			OLD_STYLE),
 	;
 
 	static {
@@ -91,6 +93,8 @@ public enum TerminalType {
 	private final Dimension defaultSize;
 
 	private final boolean canUpdateLowerRightCell;
+
+	private final BrightForegroundSupport brightForegroundSupport;
 
 	private final BrightBackgroundSupport brightBackgroundSupport;
 
@@ -139,114 +143,22 @@ public enum TerminalType {
 
 	/**
 	 * @param term
-	 */
-	private TerminalType(final String term) {
-		this(term, _80X24, true, AIXTERM, TitleWriter.ANSI);
-	}
-
-	/**
-	 * @param term
-	 * @param canUpdateLowerRightCell
-	 */
-	private TerminalType(final String term,
-			final boolean canUpdateLowerRightCell) {
-		this(term, _80X24, canUpdateLowerRightCell, AIXTERM, TitleWriter.ANSI);
-	}
-
-	/**
-	 * @param term
-	 * @param brightBackgroundSupport
-	 */
-	private TerminalType(final String term,
-			final BrightBackgroundSupport brightBackgroundSupport) {
-		this(term, _80X24, brightBackgroundSupport);
-	}
-
-	/**
-	 * @param term
-	 * @param defaultSize
-	 * @param brightBackgroundSupport
-	 */
-	private TerminalType(final String term,
-			final Dimension defaultSize,
-			final BrightBackgroundSupport brightBackgroundSupport) {
-		this(term, defaultSize, true, brightBackgroundSupport, TitleWriter.ANSI);
-	}
-
-	/**
-	 * @param term
-	 * @param titleWriter
-	 */
-	private TerminalType(final String term,
-			final TitleWriter titleWriter) {
-		this(term, _80X24, true, AIXTERM, titleWriter);
-	}
-
-	/**
-	 * @param term
 	 * @param defaultSize
 	 * @param canUpdateLowerRightCell
-	 * @param titleWriter
-	 */
-	private TerminalType(final String term,
-			final Dimension defaultSize,
-			final boolean canUpdateLowerRightCell,
-			final TitleWriter titleWriter) {
-		this(term, defaultSize, canUpdateLowerRightCell, AIXTERM, titleWriter);
-	}
-
-	/**
-	 * @param term
-	 * @param brightBackgroundSupport
-	 * @param titleWriter
-	 */
-	private TerminalType(final String term,
-			final BrightBackgroundSupport brightBackgroundSupport,
-			final TitleWriter titleWriter) {
-		this(term, _80X24, brightBackgroundSupport, titleWriter);
-	}
-
-	/**
-	 * @param term
-	 * @param defaultSize
-	 * @param brightBackgroundSupport
-	 * @param titleWriter
-	 */
-	private TerminalType(final String term,
-			final Dimension defaultSize,
-			final BrightBackgroundSupport brightBackgroundSupport,
-			final TitleWriter titleWriter) {
-		this(term, defaultSize, true, brightBackgroundSupport, titleWriter);
-	}
-
-	/**
-	 * @param term
-	 * @param canUpdateLowerRightCell
-	 * @param brightBackgroundSupport
-	 * @param titleWriter
-	 */
-	private TerminalType(final String term,
-			final boolean canUpdateLowerRightCell,
-			final BrightBackgroundSupport brightBackgroundSupport,
-			final TitleWriter titleWriter) {
-		this(term, _80X24, canUpdateLowerRightCell, brightBackgroundSupport, titleWriter);
-	}
-
-	/**
-	 * @param term
-	 * @param defaultSize
-	 * @param canUpdateLowerRightCell
+	 * @param brightForegroundSupport
 	 * @param brightBackgroundSupport
 	 * @param titleWriter
 	 */
 	private TerminalType(final String term,
 			final Dimension defaultSize,
 			final boolean canUpdateLowerRightCell,
+			final BrightForegroundSupport brightForegroundSupport,
 			final BrightBackgroundSupport brightBackgroundSupport,
 			final TitleWriter titleWriter) {
 		this.term = term;
 		this.defaultSize = defaultSize;
 		this.canUpdateLowerRightCell = canUpdateLowerRightCell;
+		this.brightForegroundSupport = brightForegroundSupport;
 		this.brightBackgroundSupport = brightBackgroundSupport;
 		this.titleWriter = titleWriter;
 	}
@@ -610,8 +522,16 @@ public enum TerminalType {
 		return this.canUpdateLowerRightCell;
 	}
 
+	public BrightForegroundSupport getBrightForegroundSupport() {
+		return this.brightForegroundSupport;
+	}
+
 	public BrightBackgroundSupport getBrightBackgroundSupport() {
 		return this.brightBackgroundSupport;
+	}
+
+	public boolean isBrightBackgroundSupported() {
+		return this.brightBackgroundSupport.isBrightColorSupported();
 	}
 
 	/**

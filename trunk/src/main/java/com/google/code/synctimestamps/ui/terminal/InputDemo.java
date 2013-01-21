@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import com.google.code.synctimestamps.ui.terminal.handlers.Echo;
 import com.google.code.synctimestamps.ui.terminal.handlers.ExitHandler;
-import com.google.code.synctimestamps.ui.terminal.handlers.TextAttributeHandler;
+import com.google.code.synctimestamps.ui.terminal.handlers.TextColorHandler;
 import com.google.code.synctimestamps.ui.terminal.handlers.WtHandler;
 
 /**
@@ -71,7 +71,7 @@ public final class InputDemo implements Application {
 	 */
 	@Override
 	public InputEventHandler getInputEventHandler() {
-		return new ExitHandler().append(new WtHandler()).append(new TextAttributeHandler()).append(new Echo());
+		return new ExitHandler().append(new WtHandler()).append(new TextColorHandler()).append(new Echo());
 	}
 
 	/**

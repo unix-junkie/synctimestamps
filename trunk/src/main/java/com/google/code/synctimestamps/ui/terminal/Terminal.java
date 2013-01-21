@@ -3,7 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
-import static com.google.code.synctimestamps.ui.terminal.BrightBackgroundSupport.AIXTERM;
 import static com.google.code.synctimestamps.ui.terminal.InputEvent.ESC;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.ASCII;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingMethod.VT100_LINES;
@@ -394,11 +393,12 @@ public final class Terminal extends PrintWriter {
 		final Set<TextAttribute> effectiveAttributes = attributes.length == 0
 				? EnumSet.noneOf(TextAttribute.class)
 				: EnumSet.copyOf(asList(attributes));
-		if (effectiveForeground != null && effectiveForeground.isBright()) {
+		if (effectiveForeground != null && effectiveForeground.isBright()
+				&& this.type.getBrightForegroundSupport().useBold()) {
 			effectiveAttributes.add(BOLD);
 		}
 		if (effectiveBackground != null && effectiveBackground.isBright()
-				&& this.type.getBrightBackgroundSupport() == BrightBackgroundSupport.BLINK) {
+				&& this.type.getBrightBackgroundSupport().useBlink()) {
 			effectiveAttributes.add(BLINK);
 		}
 
@@ -412,9 +412,13 @@ public final class Terminal extends PrintWriter {
 		 * Also, invalidate previous settings if current
 		 * foreground color is a dark one (so we may need
 		 * to reset the BOLD flag)
+		 *
+		 * This should be done in a *separate* escape sequence.
 		 */
 		if (!effectiveAttributes.isEmpty() || effectiveForeground != null && effectiveForeground.isDark()) {
-			s.append(NORMAL.ordinal()).append(';');
+			this.printCsi();
+			this.print(NORMAL.ordinal());
+			this.print(";m");
 		}
 
 		/*
@@ -429,11 +433,15 @@ public final class Terminal extends PrintWriter {
 
 		if (effectiveForeground != null) {
 			s.append(30 + effectiveForeground.darker().ordinal()).append(';');
+			if (effectiveForeground.isBright()
+					&& this.type.getBrightForegroundSupport().useAixTerm()) {
+				s.append(90 + effectiveForeground.darker().ordinal()).append(';');
+			}
 		}
 		if (effectiveBackground != null) {
 			s.append(40 + effectiveBackground.darker().ordinal()).append(';');
 			if (effectiveBackground.isBright()
-					&& this.type.getBrightBackgroundSupport() == AIXTERM) {
+					&& this.type.getBrightBackgroundSupport().useAixTerm()) {
 				s.append(100 + effectiveBackground.darker().ordinal()).append(';');
 			}
 		}
@@ -451,25 +459,6 @@ public final class Terminal extends PrintWriter {
 	}
 
 	/**
-	 * @param foreground
-	 */
-	public Terminal setBrightForeground(@Nonnull final Color foreground) {
-		/*
-		 * Fall back to defaults in case AIX colours are not supported.
-		 */
-		this.setForeground(foreground);
-
-		final StringBuilder s = new StringBuilder();
-		s.append(90 + foreground.darker().ordinal());
-
-		this.printCsi();
-		this.print(s);
-		this.print('m');
-
-		return this;
-	}
-
-	/**
 	 * @param title
 	 */
 	public Terminal setTitle(@Nullable final String title) {
@@ -482,7 +471,7 @@ public final class Terminal extends PrintWriter {
 	 *
 	 * @return This terminal
 	 */
-	Terminal printCsi() {
+	private Terminal printCsi() {
 		this.printEsc();
 		this.print('[');
 		return this;
