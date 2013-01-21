@@ -9,8 +9,7 @@ import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.HO
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_LEFT;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_RIGHT;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.VERTICAL;
-import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.DOUBLE;
-import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.NONE;
+import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.DOUBLE_RAISED;
 import static com.google.common.base.Functions.compose;
 import static com.google.common.collect.Iterables.transform;
 import static java.util.Arrays.asList;
@@ -85,7 +84,7 @@ public final class RootWindow {
 			@Nonnull final Color foreground,
 			@Nonnull final Color background,
 			@Nonnull final Color borderForeground) {
-		this(term, title, foreground, background, borderForeground, DOUBLE);
+		this(term, title, foreground, background, borderForeground, DOUBLE_RAISED);
 	}
 
 	/**
@@ -181,27 +180,44 @@ public final class RootWindow {
 		};
 	}
 
-	public void paint() {
-		if (this.borderStyle != NONE) {
-			final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
-			final boolean alternateCharset = lineDrawingMethod.isAlternateCharset();
-			final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
-			for (int i = 2; i <= this.width - 1; i++) {
-				this.buffer.setTextAt(horizontal, i, 1, alternateCharset, this.borderForeground, this.borderAttributes);
-				this.buffer.setTextAt(horizontal, i, this.height, alternateCharset, this.borderForeground, this.borderAttributes);
-			}
-
-			final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
-			for (int i = 2; i <= this.height - 1; i++) {
-				this.buffer.setTextAt(vertical, 1, i, alternateCharset, this.borderForeground, this.borderAttributes);
-				this.buffer.setTextAt(vertical, this.width, i, alternateCharset, this.borderForeground, this.borderAttributes);
-			}
-
-			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset, this.borderForeground, this.borderAttributes);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height, alternateCharset, this.borderForeground, this.borderAttributes);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1, alternateCharset, this.borderForeground, this.borderAttributes);
-			this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height, alternateCharset, this.borderForeground, this.borderAttributes);
+	private void paintBorder() {
+		if (this.borderStyle.isEmpty()) {
+			return;
 		}
+
+		final Color topLeftForeground = this.borderStyle.isRaised()
+				? this.borderForeground.brighter()
+				: this.borderStyle.isLowered()
+						? this.borderForeground.darker()
+						: this.borderForeground;
+		final Color bottomRightForeground = this.borderStyle.isRaised()
+				? this.borderForeground.darker()
+				: this.borderStyle.isLowered()
+						? this.borderForeground.brighter()
+						: this.borderForeground;
+
+		final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
+		final boolean alternateCharset = lineDrawingMethod.isAlternateCharset();
+		final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
+		for (int i = 2; i <= this.width - 1; i++) {
+			this.buffer.setTextAt(horizontal, i, 1, alternateCharset, topLeftForeground, this.borderAttributes);
+			this.buffer.setTextAt(horizontal, i, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
+		}
+
+		final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
+		for (int i = 2; i <= this.height - 1; i++) {
+			this.buffer.setTextAt(vertical, 1, i, alternateCharset, topLeftForeground, this.borderAttributes);
+			this.buffer.setTextAt(vertical, this.width, i, alternateCharset, bottomRightForeground, this.borderAttributes);
+		}
+
+		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset, topLeftForeground, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1, alternateCharset, topLeftForeground, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
+	}
+
+	public void paint() {
+		this.paintBorder();
 
 		this.buffer.paint(this.term);
 	}
