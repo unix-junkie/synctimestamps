@@ -18,6 +18,7 @@
 			<filtered>true</filtered>
 			<includes>
 				<include>${project.artifactId}</include>
+				<include>christmas-demo</include>
 			</includes>
 		</fileSet>
 		<fileSet>
