@@ -3,6 +3,11 @@
  */
 package com.google.code.synctimestamps.ui.terminal.wt;
 
+import static com.google.common.base.Functions.compose;
+import static com.google.common.collect.Iterables.transform;
+import static java.util.Arrays.asList;
+import static java.util.EnumSet.noneOf;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -10,49 +15,76 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import com.google.code.synctimestamps.ui.terminal.Color;
+import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TextAttribute;
+import com.google.common.base.Function;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
  * @version $Revision$, $Date$
  */
-final class RootWindowBuffer implements Iterable<ScreenCell> {
-	final ScreenCell cells[][];
+final class RootWindowBuffer extends AbstractComponentBuffer implements Iterable<ScreenCell> {
+	ScreenCell cells[][];
 
-	RootWindowBuffer(final int width, final int height) {
-		this.cells = new ScreenCell[height][width];
-		for (int y = 1, m = this.cells.length; y <= m; y++) {
-			for (int x = 1, n = this.cells[y - 1].length; x <= n; x++) {
-				this.cells[y - 1][x - 1] = new ScreenCell();
-			}
-		}
+	@Nonnull
+	private final Color foreground;
+
+	@Nonnull
+	private final Color background;
+
+	private final Set<TextAttribute> foregroundAttributes = noneOf(TextAttribute.class);
+
+	/**
+	 * @param foreground
+	 * @param background
+	 * @param foregroundAttributes
+	 */
+	RootWindowBuffer(@Nonnull final Color foreground,
+			@Nonnull final Color background,
+			@Nonnull final TextAttribute ... foregroundAttributes) {
+		this(new Dimension(0, 0), foreground, background, foregroundAttributes);
 	}
 
-	public void setTextAt(final char text, final int x, final int y) {
-		this.setTextAt(text, x, y, false);
+	/**
+	 * @param size
+	 * @param foreground
+	 * @param background
+	 * @param foregroundAttributes
+	 */
+	RootWindowBuffer(final Dimension size,
+			@Nonnull final Color foreground,
+			@Nonnull final Color background,
+			@Nonnull final TextAttribute ... foregroundAttributes) {
+		this.foreground = foreground;
+		this.background = background;
+		this.foregroundAttributes.addAll(asList(foregroundAttributes));
+		this.setSize(size);
 	}
 
-	public void setTextAt(final char text, final int x, final int y, final boolean alternateCharset) {
-		this.setTextAt(text, x, y, alternateCharset, null);
-	}
-
+	/**
+	 * @see ComponentBuffer#setTextAt(char, int, int, boolean, Color, Color, TextAttribute[])
+	 */
+	@Override
 	public void setTextAt(final char text,
 			final int x,
 			final int y,
 			final boolean alternateCharset,
 			final Color foreground,
-			@Nonnull final Set<TextAttribute> attributes) {
-		this.setTextAt(text, x, y, alternateCharset, foreground, TextAttribute.toArray(attributes));
-	}
-
-	public void setTextAt(final char text,
-			final int x,
-			final int y,
-			final boolean alternateCharset,
-			final Color foreground,
+			final Color background,
 			@Nonnull final TextAttribute ... attributes) {
+		if (y < 1 || x < 1) {
+			throw new IllegalArgumentException("(" + x + ", " + y + ")");
+		}
+		if (y > this.getHeight() || x > this.getWidth(y)) {
+			/*
+			 * If root window is larger than this buffer,
+			 * simply don't do anything.
+			 */
+			return;
+		}
+
 		final ScreenCell currentCell = this.cells[y - 1][x - 1];
 		currentCell.setText(text);
 		currentCell.setAlternateCharset(alternateCharset);
@@ -61,13 +93,16 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 		if (foreground != null) {
 			currentCell.setForeground(foreground);
 		}
+		if (background != null) {
+			currentCell.setBackground(background);
+		}
 	}
 
 	public void paint(final Terminal term) {
-		for (int y = 1, m = this.cells.length; y <= m; y++) {
+		for (int y = 1, m = this.getHeight(); y <= m; y++) {
 			term.setCursorLocation(1, y);
 
-			for (int x = 1, n = this.cells[y - 1].length; x <= n; x++) {
+			for (int x = 1, n = this.getWidth(y); x <= n; x++) {
 				if (x == n && y == m && !term.getType().canUpdateLowerRightCell()) {
 					continue;
 				}
@@ -88,13 +123,13 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 				if (attributesChanged) {
 					term.setTextAttributes(attributes);
 				}
-				final Color foreground = currentCell.getForeground();
-				if (attributesChanged || previousCell == null || previousCell.getForeground() != foreground) {
-					term.setForeground(foreground);
+				final Color cellForeground = currentCell.getForeground();
+				if (attributesChanged || previousCell == null || previousCell.getForeground() != cellForeground) {
+					term.setForeground(cellForeground);
 				}
-				final Color background = currentCell.getBackground();
-				if (attributesChanged || previousCell == null || previousCell.getBackground() != background) {
-					term.setBackground(background);
+				final Color cellBackground = currentCell.getBackground();
+				if (attributesChanged || previousCell == null || previousCell.getBackground() != cellBackground) {
+					term.setBackground(cellBackground);
 				}
 				term.print(currentCell.getText());
 			}
@@ -127,7 +162,7 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 			/*
 			 * We're at the first column already.
 			 */
-			previousX = this.cells[y - 1].length;
+			previousX = this.getWidth(y);
 			previousY = y - 1;
 		} else {
 			previousX = x - 1;
@@ -135,6 +170,101 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 		}
 
 		return this.cells[previousY - 1][previousX - 1];
+	}
+
+	/**
+	 * Returns the width of this buffer. Buffer height may be less
+	 * than the root window width, whereas clipping occurs.
+	 *
+	 * @return the width of this buffer.
+	 * @see #getWidth(int)
+	 */
+	int getWidth() {
+		return this.getWidth(1);
+	}
+
+	/**
+	 * Returns the width of this buffer, measured at row identified
+	 * by <em>y</em>. Buffer height may be less than the root window
+	 * width, whereas clipping occurs.
+	 *
+	 * @param y the 1-based row identifier.
+	 * @return the width of this buffer, measured at row identified by <em>y</em>.
+	 * @throws IllegalArgumentException if <em>y &lt; 1</em> or <em>y &gt; {@link #getHeight() buffer height}</em>
+	 * @see #getHeight()
+	 */
+	int getWidth(final int y) {
+		final int height = this.getHeight();
+		if (y < 1 || y > height) {
+			throw new IllegalArgumentException(y + " not in range [1; " + height + ']');
+		}
+		return this.cells[y - 1].length;
+	}
+
+	/**
+	 * Returns the height of this buffer. Buffer height may be less
+	 * than the root window height, whereas clipping occurs.
+	 *
+	 * @return the height of this buffer.
+	 */
+	int getHeight() {
+		return this.cells.length;
+	}
+
+	Dimension getSize() {
+		return new Dimension(this.getWidth(), this.getHeight());
+	}
+
+	/**
+	 * @param size
+	 */
+	void setSize(final Dimension size) {
+		this.cells = new ScreenCell[size.getHeight()][size.getWidth()];
+		for (int y = 1, m = this.getHeight(); y <= m; y++) {
+			for (int x = 1, n = this.getWidth(y); x <= n; x++) {
+				this.cells[y - 1][x - 1] = new ScreenCell();
+			}
+		}
+		for (@SuppressWarnings("unused") final ScreenCell screenCell : transform(this,
+				compose(setForeground(this.foreground, this.foregroundAttributes),
+				setBackground(this.background)))) {
+			// Empty: only required to repeatedly apply the function.
+		}
+	}
+
+	/**
+	 * @param foreground
+	 * @param foregroundAttributes
+	 */
+	private static Function<ScreenCell, ScreenCell> setForeground(@Nonnull final Color foreground,
+			@Nonnull final Set<TextAttribute> foregroundAttributes) {
+		return new Function<ScreenCell, ScreenCell>() {
+			/**
+			 * @see Function#apply
+			 */
+			@Override
+			public ScreenCell apply(final ScreenCell from) {
+				from.setForeground(foreground);
+				from.setAttributes(foregroundAttributes);
+				return from;
+			}
+		};
+	}
+
+	/**
+	 * @param background
+	 */
+	private static Function<ScreenCell, ScreenCell> setBackground(@Nonnull final Color background) {
+		return new Function<ScreenCell, ScreenCell>() {
+			/**
+			 * @see Function#apply
+			 */
+			@Override
+			public ScreenCell apply(final ScreenCell from) {
+				from.setBackground(background);
+				return from;
+			}
+		};
 	}
 
 	/**
@@ -164,8 +294,11 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 		 */
 		@Override
 		public boolean hasNext() {
-			return this.y != RootWindowBuffer.this.cells.length
-					|| this.x != RootWindowBuffer.this.cells[this.y - 1].length;
+			final int height = RootWindowBuffer.this.getHeight();
+			return height > 0
+					&& RootWindowBuffer.this.getWidth(height) > 0
+					&& (this.y != height
+							|| this.x != RootWindowBuffer.this.getWidth(this.y));
 		}
 
 		/**
@@ -179,7 +312,7 @@ final class RootWindowBuffer implements Iterable<ScreenCell> {
 
 			final ScreenCell current = RootWindowBuffer.this.cells[this.y - 1][this.x - 1];
 
-			if (this.x == RootWindowBuffer.this.cells[this.y - 1].length) {
+			if (this.x == RootWindowBuffer.this.getWidth(this.y)) {
 				/*
 				 * We're at the last column already.
 				 */

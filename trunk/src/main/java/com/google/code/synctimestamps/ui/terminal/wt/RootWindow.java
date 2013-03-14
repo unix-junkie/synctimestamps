@@ -10,8 +10,8 @@ import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_RIGHT;
 import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.VERTICAL;
 import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.DOUBLE_RAISED;
-import static com.google.common.base.Functions.compose;
-import static com.google.common.collect.Iterables.transform;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.EnumSet.noneOf;
 
@@ -23,24 +23,33 @@ import javax.annotation.Nullable;
 import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.LineDrawingMethod;
+import com.google.code.synctimestamps.ui.terminal.Point;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TextAttribute;
-import com.google.common.base.Function;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class RootWindow {
+public final class RootWindow implements Component, Container {
+	private static final int MINIMUM_WIDTH = 2;
+
+	private static final int MINIMUM_HEIGHT = 2;
+
 	private final Terminal term;
 
-	private final int width;
+	private Dimension size;
 
-	private final int height;
+	private Dimension minimumSize = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
 
 	@Nullable
 	private final String title;
+
+	@Nonnull
+	private final Color foreground;
+
+	private final Set<TextAttribute> foregroundAttributes = noneOf(TextAttribute.class);
 
 	@Nonnull
 	private final BorderStyle borderStyle;
@@ -50,7 +59,10 @@ public final class RootWindow {
 
 	private final Set<TextAttribute> borderAttributes = noneOf(TextAttribute.class);
 
-	private final RootWindowBuffer buffer;
+	@Nullable
+	private ChildComponent contentPane;
+
+	final RootWindowBuffer buffer;
 
 	/**
 	 * @param term
@@ -105,45 +117,13 @@ public final class RootWindow {
 			@Nonnull final TextAttribute ... foregroundAttributes) {
 		this.term = term;
 		this.title = title;
+		this.foreground = foreground;
+		this.foregroundAttributes.addAll(asList(foregroundAttributes));
 		this.borderStyle = borderStyle;
 		this.setBorderForeground(borderForeground);
 
-		final Dimension size = term.getSize();
-		if (size.isUndefined()) {
-			final Dimension defaultSize = term.getDefaultSize();
-			assert !defaultSize.isUndefined();
-			this.width = defaultSize.getWidth();
-			this.height = defaultSize.getHeight();
-		} else {
-			this.width = size.getWidth();
-			this.height = size.getHeight();
-		}
-
-		this.buffer = new RootWindowBuffer(this.width, this.height);
-		for (@SuppressWarnings("unused") final ScreenCell screenCell : transform(this.buffer,
-				compose(setForeground(foreground, foregroundAttributes),
-				setBackground(background)))) {
-			// Empty: only required to repeatedly apply the function.
-		}
-	}
-
-	/**
-	 * @param foreground
-	 * @param foregroundAttributes
-	 */
-	private static Function<ScreenCell, ScreenCell> setForeground(@Nonnull final Color foreground,
-			@Nonnull final TextAttribute ... foregroundAttributes) {
-		return new Function<ScreenCell, ScreenCell>() {
-			/**
-			 * @see Function#apply
-			 */
-			@Override
-			public ScreenCell apply(final ScreenCell from) {
-				from.setForeground(foreground);
-				from.setAttributes(foregroundAttributes);
-				return from;
-			}
-		};
+		this.buffer = new RootWindowBuffer(foreground, background, foregroundAttributes);
+		this.resizeToTerm();
 	}
 
 	/**
@@ -165,19 +145,54 @@ public final class RootWindow {
 	}
 
 	/**
-	 * @param background
+	 * @param minimumSize
 	 */
-	private static Function<ScreenCell, ScreenCell> setBackground(@Nonnull final Color background) {
-		return new Function<ScreenCell, ScreenCell>() {
-			/**
-			 * @see Function#apply
-			 */
-			@Override
-			public ScreenCell apply(final ScreenCell from) {
-				from.setBackground(background);
-				return from;
-			}
-		};
+	public void setMinimumSize(@Nonnull final Dimension minimumSize) {
+		if (minimumSize.getWidth() < MINIMUM_WIDTH
+				|| minimumSize.getHeight() < MINIMUM_HEIGHT) {
+			throw new IllegalArgumentException();
+		}
+
+		this.minimumSize = minimumSize;
+	}
+
+	/**
+	 * @param contentPane
+	 */
+	void setContentPane(@Nullable final ChildComponent contentPane) {
+		this.contentPane = contentPane;
+	}
+
+	public void resizeToTerm() {
+		if (this.term == null || this.buffer == null) {
+			throw new IllegalStateException();
+		}
+
+		final Dimension reportedTermSize = this.term.getSize();
+		final Dimension effectiveTermSize;
+		if (reportedTermSize.isUndefined()) {
+			final Dimension defaultTermSize = this.term.getDefaultSize();
+			assert !defaultTermSize.isUndefined();
+			effectiveTermSize = defaultTermSize;
+		} else {
+			effectiveTermSize = reportedTermSize;
+		}
+
+		this.size = new Dimension(max(effectiveTermSize.getWidth(), this.minimumSize.getWidth()),
+				max(effectiveTermSize.getHeight(), this.minimumSize.getHeight()));
+		this.buffer.setSize(effectiveTermSize);
+
+		if (this.contentPane != null) {
+			final boolean titleAbsent = this.title == null || this.title.length() == 0;
+			this.contentPane.setLocation(this.borderStyle.isEmpty()
+					? new Point(1, titleAbsent ? 1 : 2)
+					: new Point(2, 2));
+			this.contentPane.setSize(this.borderStyle.isEmpty()
+					? titleAbsent
+							? this.size
+							: new Dimension(this.size.getWidth(), this.size.getHeight() - 1)
+					: new Dimension(this.size.getWidth() - 2, this.size.getHeight() - 2));
+		}
 	}
 
 	private void paintBorder() {
@@ -196,29 +211,126 @@ public final class RootWindow {
 						? this.borderForeground.brighter()
 						: this.borderForeground;
 
+		final int width = this.size.getWidth();
+		final int height = this.size.getHeight();
 		final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
 		final boolean alternateCharset = lineDrawingMethod.isAlternateCharset();
 		final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
-		for (int i = 2; i <= this.width - 1; i++) {
-			this.buffer.setTextAt(horizontal, i, 1, alternateCharset, topLeftForeground, this.borderAttributes);
-			this.buffer.setTextAt(horizontal, i, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
+		for (int i = 2; i <= width - 1; i++) {
+			this.buffer.setTextAt(horizontal, i, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
+			this.buffer.setTextAt(horizontal, i, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
 		}
 
 		final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
-		for (int i = 2; i <= this.height - 1; i++) {
-			this.buffer.setTextAt(vertical, 1, i, alternateCharset, topLeftForeground, this.borderAttributes);
-			this.buffer.setTextAt(vertical, this.width, i, alternateCharset, bottomRightForeground, this.borderAttributes);
+		for (int i = 2; i <= height - 1; i++) {
+			this.buffer.setTextAt(vertical, 1, i, alternateCharset, topLeftForeground, null, this.borderAttributes);
+			this.buffer.setTextAt(vertical, width, i, alternateCharset, bottomRightForeground, null, this.borderAttributes);
 		}
 
-		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset, topLeftForeground, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), this.width, 1, alternateCharset, topLeftForeground, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), this.width, this.height, alternateCharset, bottomRightForeground, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), width, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
+		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), width, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
 	}
 
+	private void paintTitle() {
+		if (this.title == null) {
+			return;
+		}
+		final int titleLength = this.title.length();
+		if (titleLength == 0) {
+			return;
+		}
+
+		/*
+		 * Window width minus 2 empty cells minus border corners.
+		 */
+		final int maximumTitleLength = max(0, this.size.getWidth() - 2 - (this.borderStyle.isEmpty() ? 0 : 2));
+		final int effectiveTitleLength = min(titleLength, maximumTitleLength);
+		final String effectiveTitle;
+		switch (effectiveTitleLength) {
+		case 0:
+			/*
+			 * Don't paint a title at all.
+			 */
+			return;
+		case 1:
+			/*
+			 * Only the first title character can be painted.
+			 */
+			effectiveTitle = ' ' + this.title.substring(0, effectiveTitleLength) + ' ';
+			break;
+		default:
+			/*-
+			 * If the title doesn't fit, trim it and add the '>' at the end.
+			 * If window width is odd and title length is even (or vice versa),
+			 * add an extra space to the end of title (unless we're trimming it).
+			 */
+			effectiveTitle = ' ' + (titleLength == effectiveTitleLength
+					? titleLength % 2 == this.size.getWidth() % 2
+							? this.title
+							: this.title + ' '
+					: this.title.substring(0, effectiveTitleLength - 1) + '>') + ' ';
+			break;
+		}
+
+		for (int i = 0; i < effectiveTitle.length(); i++) {
+			this.buffer.setTextAt(effectiveTitle.charAt(i), i + (this.size.getWidth() - effectiveTitleLength) / 2, 1, false, this.foreground, null, this.foregroundAttributes);
+		}
+	}
+
+	private void paintChildren() {
+		if (this.contentPane != null) {
+			this.contentPane.paint();
+		}
+	}
+
+	/**
+	 * @see Component#paint()
+	 */
+	@Override
 	public void paint() {
 		this.paintBorder();
+		this.paintTitle();
+		this.paintChildren();
 
 		this.buffer.paint(this.term);
+	}
+
+	/**
+	 * @see Container#isTopLevel()
+	 */
+	@Override
+	public boolean isTopLevel() {
+		return true;
+	}
+
+	/**
+	 * @see Container#getComponentBuffer(ChildComponent)
+	 */
+	@Override
+	public ComponentBuffer getComponentBuffer(@Nonnull final ChildComponent child) {
+		if (child != this.contentPane) {
+			throw new IllegalArgumentException();
+		}
+
+		return new AbstractComponentBuffer() {
+			/**
+			 * @see ComponentBuffer#setTextAt(char, int, int, boolean, Color, Color, TextAttribute[])
+			 */
+			@Override
+			public void setTextAt(final char text, final int x, final int y, final boolean alternateCharset, final Color foreground, final Color background, @Nonnull final TextAttribute... attributes) {
+				/*
+				 * If the child component exceeds its bounds,
+				 * then just clip it.
+				 */
+				if (x > child.getSize().getWidth() || y > child.getSize().getHeight()) {
+					return;
+				}
+
+				final Point childLocation = child.getLocation();
+				RootWindow.this.buffer.setTextAt(text, x + childLocation.getX() - 1, y + childLocation.getY() - 1, alternateCharset, foreground, background, attributes);
+			}
+		};
 	}
 }
