@@ -3,8 +3,6 @@
  */
 package com.google.code.synctimestamps.ui.terminal.wt;
 
-import static com.google.common.base.Functions.compose;
-import static com.google.common.collect.Iterables.transform;
 import static java.util.Arrays.asList;
 import static java.util.EnumSet.noneOf;
 
@@ -18,7 +16,6 @@ import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TextAttribute;
-import com.google.common.base.Function;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
@@ -32,7 +29,9 @@ final class RootWindowBuffer extends AbstractComponentBuffer implements Iterable
 	private final Color foreground;
 
 	@Nonnull
-	private final Color background;
+	private Color background;
+
+	private char backgroundPattern = ' ';
 
 	private final Set<TextAttribute> foregroundAttributes = noneOf(TextAttribute.class);
 
@@ -44,23 +43,9 @@ final class RootWindowBuffer extends AbstractComponentBuffer implements Iterable
 	RootWindowBuffer(@Nonnull final Color foreground,
 			@Nonnull final Color background,
 			@Nonnull final TextAttribute ... foregroundAttributes) {
-		this(new Dimension(0, 0), foreground, background, foregroundAttributes);
-	}
-
-	/**
-	 * @param size
-	 * @param foreground
-	 * @param background
-	 * @param foregroundAttributes
-	 */
-	RootWindowBuffer(final Dimension size,
-			@Nonnull final Color foreground,
-			@Nonnull final Color background,
-			@Nonnull final TextAttribute ... foregroundAttributes) {
 		this.foreground = foreground;
 		this.background = background;
 		this.foregroundAttributes.addAll(asList(foregroundAttributes));
-		this.setSize(size);
 	}
 
 	/**
@@ -222,49 +207,45 @@ final class RootWindowBuffer extends AbstractComponentBuffer implements Iterable
 		this.cells = new ScreenCell[size.getHeight()][size.getWidth()];
 		for (int y = 1, m = this.getHeight(); y <= m; y++) {
 			for (int x = 1, n = this.getWidth(y); x <= n; x++) {
-				this.cells[y - 1][x - 1] = new ScreenCell();
+				this.cells[y - 1][x - 1] = new ScreenCell(this.backgroundPattern);
 			}
 		}
-		for (@SuppressWarnings("unused") final ScreenCell screenCell : transform(this,
-				compose(setForeground(this.foreground, this.foregroundAttributes),
-				setBackground(this.background)))) {
-			// Empty: only required to repeatedly apply the function.
+
+		for (final ScreenCell screenCell : this) {
+			screenCell.setForeground(this.foreground);
+			screenCell.setAttributes(this.foregroundAttributes);
+			screenCell.setBackground(this.background);
 		}
 	}
 
-	/**
-	 * @param foreground
-	 * @param foregroundAttributes
-	 */
-	private static Function<ScreenCell, ScreenCell> setForeground(@Nonnull final Color foreground,
-			@Nonnull final Set<TextAttribute> foregroundAttributes) {
-		return new Function<ScreenCell, ScreenCell>() {
-			/**
-			 * @see Function#apply
-			 */
-			@Override
-			public ScreenCell apply(final ScreenCell from) {
-				from.setForeground(foreground);
-				from.setAttributes(foregroundAttributes);
-				return from;
-			}
-		};
+	Color getForeground() {
+		return this.foreground;
+	}
+
+	Color getBackground() {
+		return this.background;
 	}
 
 	/**
 	 * @param background
 	 */
-	private static Function<ScreenCell, ScreenCell> setBackground(@Nonnull final Color background) {
-		return new Function<ScreenCell, ScreenCell>() {
-			/**
-			 * @see Function#apply
-			 */
-			@Override
-			public ScreenCell apply(final ScreenCell from) {
-				from.setBackground(background);
-				return from;
-			}
-		};
+	void setBackground(@Nonnull final Color background) {
+		if (background == null) {
+			throw new IllegalArgumentException();
+		}
+
+		this.background = background;
+	}
+
+	char getBackgroundPattern() {
+		return this.backgroundPattern;
+	}
+
+	/**
+	 * @param backgroundPattern
+	 */
+	void setBackgroundPattern(final char backgroundPattern) {
+		this.backgroundPattern = backgroundPattern;
 	}
 
 	/**

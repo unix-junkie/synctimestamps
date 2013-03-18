@@ -4,7 +4,9 @@
 package com.google.code.synctimestamps.ui.terminal.wt;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
 import com.google.code.synctimestamps.ui.terminal.Point;
 
@@ -23,6 +25,11 @@ public final class PanelContainer implements ChildComponent, Container {
 	 */
 	@Override
 	public void paint() {
+		final Dimension size = this.getSize();
+		if (size.isUndefined() || size.getWidth() == 0 || size.getHeight() == 0) {
+			return;
+		}
+
 		throw new UnsupportedOperationException();
 	}
 
@@ -35,7 +42,7 @@ public final class PanelContainer implements ChildComponent, Container {
 	}
 
 	/**
-	 * @see ChildComponent#getSize()
+	 * @see Component#getSize()
 	 */
 	@Override
 	public Dimension getSize() {
@@ -79,10 +86,66 @@ public final class PanelContainer implements ChildComponent, Container {
 	}
 
 	/**
-	 * @see ChildComponent#getLocation()
+	 * @see Component#getLocation()
 	 */
 	@Override
 	public Point getLocation() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see ChildComponent#getBorder()
+	 */
+	@Override
+	public Border getBorder() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#setBorder(Border)
+	 */
+	@Override
+	public void setBorder(@Nullable final Border border) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#getForeground()
+	 */
+	@Override
+	public Color getForeground() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#getBackground()
+	 */
+	@Override
+	public Color getBackground() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#setBackground(Color)
+	 */
+	@Override
+	public void setBackground(@Nullable final Color background) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#getBackgroundPattern()
+	 */
+	@Override
+	public char getBackgroundPattern() {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @see Component#setBackgroundPattern(char)
+	 */
+	@Override
+	public void setBackgroundPattern(final char backgroundPattern) {
 		throw new UnsupportedOperationException();
 	}
 }

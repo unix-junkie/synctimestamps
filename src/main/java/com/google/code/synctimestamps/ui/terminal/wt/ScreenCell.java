@@ -37,10 +37,6 @@ final class ScreenCell {
 
 	private boolean alternateCharset;
 
-	ScreenCell() {
-		this(' ');
-	}
-
 	/**
 	 * @param text
 	 */

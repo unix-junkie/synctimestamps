@@ -14,14 +14,10 @@ import com.google.code.synctimestamps.ui.terminal.Point;
  * @version $Revision$, $Date$
  */
 public interface ChildComponent extends Component {
-	Point getLocation();
-
 	/**
 	 * @param location
 	 */
 	void setLocation(@Nonnull final Point location);
-
-	Dimension getSize();
 
 	/**
 	 * @param size
@@ -29,4 +25,6 @@ public interface ChildComponent extends Component {
 	void setSize(@Nonnull final Dimension size);
 
 	Container getParent();
+
+	Border getBorder();
 }
