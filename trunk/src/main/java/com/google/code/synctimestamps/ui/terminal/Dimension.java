@@ -3,6 +3,9 @@
  */
 package com.google.code.synctimestamps.ui.terminal;
 
+import static java.lang.Math.max;
+
+
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
@@ -77,5 +80,13 @@ public final class Dimension {
 
 	public boolean isUndefined() {
 		return this.equals(UNDEFINED);
+	}
+
+	/**
+	 * @param insets
+	 */
+	public Dimension subtract(final Insets insets) {
+		return new Dimension(max(0, this.getWidth() - insets.getWidth()),
+				max(0, this.getHeight() - insets.getHeight()));
 	}
 }

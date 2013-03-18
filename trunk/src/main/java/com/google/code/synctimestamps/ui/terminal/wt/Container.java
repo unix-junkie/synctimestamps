@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public interface Container {
+public interface Container extends Component {
 	boolean isTopLevel();
 
 	/**

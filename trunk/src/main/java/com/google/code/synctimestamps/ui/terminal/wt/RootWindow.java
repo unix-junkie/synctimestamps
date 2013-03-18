@@ -3,15 +3,8 @@
  */
 package com.google.code.synctimestamps.ui.terminal.wt;
 
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.DOWN_AND_LEFT;
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.DOWN_AND_RIGHT;
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.HORIZONTAL;
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_LEFT;
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.UP_AND_RIGHT;
-import static com.google.code.synctimestamps.ui.terminal.LineDrawingConstants.VERTICAL;
-import static com.google.code.synctimestamps.ui.terminal.wt.BorderStyle.DOUBLE_RAISED;
+import static com.google.code.synctimestamps.ui.terminal.Dimension.UNDEFINED;
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.EnumSet.noneOf;
 
@@ -22,7 +15,7 @@ import javax.annotation.Nullable;
 
 import com.google.code.synctimestamps.ui.terminal.Color;
 import com.google.code.synctimestamps.ui.terminal.Dimension;
-import com.google.code.synctimestamps.ui.terminal.LineDrawingMethod;
+import com.google.code.synctimestamps.ui.terminal.Insets;
 import com.google.code.synctimestamps.ui.terminal.Point;
 import com.google.code.synctimestamps.ui.terminal.Terminal;
 import com.google.code.synctimestamps.ui.terminal.TextAttribute;
@@ -32,32 +25,24 @@ import com.google.code.synctimestamps.ui.terminal.TextAttribute;
  * @author $Author$
  * @version $Revision$, $Date$
  */
-public final class RootWindow implements Component, Container {
+public final class RootWindow implements Container {
 	private static final int MINIMUM_WIDTH = 2;
 
 	private static final int MINIMUM_HEIGHT = 2;
 
 	private final Terminal term;
 
-	private Dimension size;
+	private Dimension size = UNDEFINED;
 
 	private Dimension minimumSize = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
-
-	@Nullable
-	private final String title;
 
 	@Nonnull
 	private final Color foreground;
 
 	private final Set<TextAttribute> foregroundAttributes = noneOf(TextAttribute.class);
 
-	@Nonnull
-	private final BorderStyle borderStyle;
-
-	@Nonnull
-	private Color borderForeground;
-
-	private final Set<TextAttribute> borderAttributes = noneOf(TextAttribute.class);
+	@Nullable
+	private Border border;
 
 	@Nullable
 	private ChildComponent contentPane;
@@ -68,80 +53,24 @@ public final class RootWindow implements Component, Container {
 	 * @param term
 	 */
 	public RootWindow(@Nonnull final Terminal term) {
-		this(term, null, term.getDefaultForeground(), term.getDefaultBackground());
+		this(term, term.getDefaultForeground(), term.getDefaultBackground());
 	}
 
 	/**
 	 * @param term
-	 * @param title
 	 * @param foreground
 	 * @param background
-	 */
-	public RootWindow(@Nonnull final Terminal term,
-			@Nullable final String title,
-			@Nonnull final Color foreground,
-			@Nonnull final Color background) {
-		this(term, title, foreground, background, foreground);
-	}
-
-	/**
-	 * @param term
-	 * @param title
-	 * @param foreground
-	 * @param background
-	 * @param borderForeground
-	 */
-	public RootWindow(@Nonnull final Terminal term,
-			@Nullable final String title,
-			@Nonnull final Color foreground,
-			@Nonnull final Color background,
-			@Nonnull final Color borderForeground) {
-		this(term, title, foreground, background, borderForeground, DOUBLE_RAISED);
-	}
-
-	/**
-	 * @param term
-	 * @param title
-	 * @param foreground
-	 * @param background
-	 * @param borderForeground
-	 * @param borderStyle
 	 * @param foregroundAttributes
 	 */
 	public RootWindow(@Nonnull final Terminal term,
-			@Nullable final String title,
 			@Nonnull final Color foreground,
 			@Nonnull final Color background,
-			@Nonnull final Color borderForeground,
-			@Nonnull final BorderStyle borderStyle,
 			@Nonnull final TextAttribute ... foregroundAttributes) {
 		this.term = term;
-		this.title = title;
 		this.foreground = foreground;
 		this.foregroundAttributes.addAll(asList(foregroundAttributes));
-		this.borderStyle = borderStyle;
-		this.setBorderForeground(borderForeground);
 
 		this.buffer = new RootWindowBuffer(foreground, background, foregroundAttributes);
-		this.resizeToTerm();
-	}
-
-	/**
-	 * @param borderForeground
-	 * @param borderAttributes
-	 */
-	public void setBorderForeground(@Nonnull final Color borderForeground,
-			@Nonnull final TextAttribute ... borderAttributes) {
-		this.borderForeground = borderForeground;
-		this.setBorderAttributes(borderAttributes);
-	}
-
-	/**
-	 * @param borderAttributes
-	 */
-	public void setBorderAttributes(@Nonnull final TextAttribute ... borderAttributes) {
-		this.borderAttributes.clear();
-		this.borderAttributes.addAll(asList(borderAttributes));
 	}
 
 	/**
@@ -154,6 +83,14 @@ public final class RootWindow implements Component, Container {
 		}
 
 		this.minimumSize = minimumSize;
+	}
+
+	/**
+	 * @param border
+	 */
+	@Override
+	public void setBorder(@Nullable final Border border) {
+		this.border = border;
 	}
 
 	/**
@@ -183,99 +120,17 @@ public final class RootWindow implements Component, Container {
 		this.buffer.setSize(effectiveTermSize);
 
 		if (this.contentPane != null) {
-			final boolean titleAbsent = this.title == null || this.title.length() == 0;
-			this.contentPane.setLocation(this.borderStyle.isEmpty()
-					? new Point(1, titleAbsent ? 1 : 2)
-					: new Point(2, 2));
-			this.contentPane.setSize(this.borderStyle.isEmpty()
-					? titleAbsent
-							? this.size
-							: new Dimension(this.size.getWidth(), this.size.getHeight() - 1)
-					: new Dimension(this.size.getWidth() - 2, this.size.getHeight() - 2));
+			final Insets insets = this.border.getBorderInsets();
+			final Point location = this.getLocation();
+			this.contentPane.setLocation(new Point(location.getX() + insets.getLeft(),
+					location.getY() + insets.getTop()));
+			this.contentPane.setSize(this.size.subtract(insets));
 		}
 	}
 
 	private void paintBorder() {
-		if (this.borderStyle.isEmpty()) {
-			return;
-		}
-
-		final Color topLeftForeground = this.borderStyle.isRaised()
-				? this.borderForeground.brighter()
-				: this.borderStyle.isLowered()
-						? this.borderForeground.darker()
-						: this.borderForeground;
-		final Color bottomRightForeground = this.borderStyle.isRaised()
-				? this.borderForeground.darker()
-				: this.borderStyle.isLowered()
-						? this.borderForeground.brighter()
-						: this.borderForeground;
-
-		final int width = this.size.getWidth();
-		final int height = this.size.getHeight();
-		final LineDrawingMethod lineDrawingMethod = this.term.getLineDrawingMethod();
-		final boolean alternateCharset = lineDrawingMethod.isAlternateCharset();
-		final char horizontal = lineDrawingMethod.getChar(HORIZONTAL, this.borderStyle);
-		for (int i = 2; i <= width - 1; i++) {
-			this.buffer.setTextAt(horizontal, i, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
-			this.buffer.setTextAt(horizontal, i, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
-		}
-
-		final char vertical = lineDrawingMethod.getChar(VERTICAL, this.borderStyle);
-		for (int i = 2; i <= height - 1; i++) {
-			this.buffer.setTextAt(vertical, 1, i, alternateCharset, topLeftForeground, null, this.borderAttributes);
-			this.buffer.setTextAt(vertical, width, i, alternateCharset, bottomRightForeground, null, this.borderAttributes);
-		}
-
-		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_RIGHT, this.borderStyle), 1, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_RIGHT, this.borderStyle), 1, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(DOWN_AND_LEFT, this.borderStyle), width, 1, alternateCharset, topLeftForeground, null, this.borderAttributes);
-		this.buffer.setTextAt(lineDrawingMethod.getChar(UP_AND_LEFT, this.borderStyle), width, height, alternateCharset, bottomRightForeground, null, this.borderAttributes);
-	}
-
-	private void paintTitle() {
-		if (this.title == null) {
-			return;
-		}
-		final int titleLength = this.title.length();
-		if (titleLength == 0) {
-			return;
-		}
-
-		/*
-		 * Window width minus 2 empty cells minus border corners.
-		 */
-		final int maximumTitleLength = max(0, this.size.getWidth() - 2 - (this.borderStyle.isEmpty() ? 0 : 2));
-		final int effectiveTitleLength = min(titleLength, maximumTitleLength);
-		final String effectiveTitle;
-		switch (effectiveTitleLength) {
-		case 0:
-			/*
-			 * Don't paint a title at all.
-			 */
-			return;
-		case 1:
-			/*
-			 * Only the first title character can be painted.
-			 */
-			effectiveTitle = ' ' + this.title.substring(0, effectiveTitleLength) + ' ';
-			break;
-		default:
-			/*-
-			 * If the title doesn't fit, trim it and add the '>' at the end.
-			 * If window width is odd and title length is even (or vice versa),
-			 * add an extra space to the end of title (unless we're trimming it).
-			 */
-			effectiveTitle = ' ' + (titleLength == effectiveTitleLength
-					? titleLength % 2 == this.size.getWidth() % 2
-							? this.title
-							: this.title + ' '
-					: this.title.substring(0, effectiveTitleLength - 1) + '>') + ' ';
-			break;
-		}
-
-		for (int i = 0; i < effectiveTitle.length(); i++) {
-			this.buffer.setTextAt(effectiveTitle.charAt(i), i + (this.size.getWidth() - effectiveTitleLength) / 2, 1, false, this.foreground, null, this.foregroundAttributes);
+		if (this.border != null) {
+			this.border.paintBorder(this, this.buffer);
 		}
 	}
 
@@ -286,12 +141,71 @@ public final class RootWindow implements Component, Container {
 	}
 
 	/**
+	 * @see com.google.code.synctimestamps.ui.terminal.wt.Component#getLocation()
+	 */
+	@Override
+	public Point getLocation() {
+		return new Point(1, 1);
+	}
+
+	/**
+	 * @see com.google.code.synctimestamps.ui.terminal.wt.Component#getSize()
+	 */
+	@Override
+	public Dimension getSize() {
+		return this.size;
+	}
+
+	/**
+	 * @see Component#getForeground()
+	 */
+	@Override
+	public Color getForeground() {
+		return this.buffer.getForeground();
+	}
+
+	/**
+	 * @see Component#getBackground()
+	 */
+	@Override
+	public Color getBackground() {
+		return this.buffer.getBackground();
+	}
+
+	/**
+	 * @see Component#setBackground(Color)
+	 */
+	@Override
+	public void setBackground(@Nullable final Color background) {
+		this.buffer.setBackground(background == null ? this.term.getDefaultBackground() : background);
+	}
+
+	/**
+	 * @see Component#getBackgroundPattern()
+	 */
+	@Override
+	public char getBackgroundPattern() {
+		return this.buffer.getBackgroundPattern();
+	}
+
+	/**
+	 * @see Component#setBackgroundPattern(char)
+	 */
+	@Override
+	public void setBackgroundPattern(final char backgroundPattern) {
+		this.buffer.setBackgroundPattern(backgroundPattern);
+	}
+
+	/**
 	 * @see Component#paint()
 	 */
 	@Override
 	public void paint() {
+		if (this.size.isUndefined()) {
+			return;
+		}
+
 		this.paintBorder();
-		this.paintTitle();
 		this.paintChildren();
 
 		this.buffer.paint(this.term);
@@ -324,12 +238,15 @@ public final class RootWindow implements Component, Container {
 				 * If the child component exceeds its bounds,
 				 * then just clip it.
 				 */
-				if (x > child.getSize().getWidth() || y > child.getSize().getHeight()) {
+				final Dimension childSize = child.getSize();
+				if (x > childSize.getWidth() || y > childSize.getHeight()) {
 					return;
 				}
 
 				final Point childLocation = child.getLocation();
-				RootWindow.this.buffer.setTextAt(text, x + childLocation.getX() - 1, y + childLocation.getY() - 1, alternateCharset, foreground, background, attributes);
+				final int xOffset = childLocation.getX() - 1;
+				final int yOffset = childLocation.getY() - 1;
+				RootWindow.this.buffer.setTextAt(text, x + xOffset, y + yOffset, alternateCharset, foreground, background, attributes);
 			}
 		};
 	}
