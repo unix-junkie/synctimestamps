@@ -1,4 +1,0 @@
-#labels Featured
-=Input Demo=
-
-<wiki:video url="http://www.youtube.com/watch?v=kSk-4r4fk9s"/>
