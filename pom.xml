@@ -148,7 +148,7 @@
 			<version>1.3.9</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.code</groupId>
+			<groupId>com.github.unix-junkie</groupId>
 			<artifactId>christmas</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		</dependency>
