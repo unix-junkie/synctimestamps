@@ -16,8 +16,6 @@ import com.google.common.base.Predicate;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 abstract class Main {
 	static final AbstractXmlApplicationContext CONTEXT = getContext();

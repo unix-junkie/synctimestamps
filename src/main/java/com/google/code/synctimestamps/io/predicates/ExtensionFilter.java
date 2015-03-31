@@ -12,8 +12,6 @@ import com.google.common.base.Predicate;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public abstract class ExtensionFilter implements Predicate<File> {
 	/**

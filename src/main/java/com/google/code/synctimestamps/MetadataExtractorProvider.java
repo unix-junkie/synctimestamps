@@ -33,8 +33,6 @@ import com.drew.metadata.exif.ExifReader;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public final class MetadataExtractorProvider extends AbstractDateTimeProvider implements ExifBased {
 	private static final byte EMPTY[] = new byte[0];

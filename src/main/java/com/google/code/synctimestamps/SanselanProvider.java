@@ -28,8 +28,6 @@ import org.apache.sanselan.formats.tiff.constants.TagInfo;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public final class SanselanProvider extends AbstractDateTimeProvider implements ExifBased {
 	private static final String DATE_PATTERNS[] = {

@@ -11,8 +11,6 @@ import com.google.common.base.Predicate;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public final class RegularFile implements Predicate<File> {
 	/**

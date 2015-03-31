@@ -8,8 +8,6 @@ import java.util.Date;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public final class MtimeBased extends AbstractDateTimeProvider implements WritableDateTimeProvider {
 	/**

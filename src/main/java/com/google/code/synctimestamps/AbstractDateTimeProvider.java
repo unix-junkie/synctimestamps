@@ -10,8 +10,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public abstract class AbstractDateTimeProvider implements DateTimeProvider {
 	private WritableDateTimeProvider next;

@@ -11,8 +11,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 public interface DateTimeProvider {
 	/**

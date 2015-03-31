@@ -23,8 +23,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  * matches a certain pattern.
  *
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
- * @author $Author$
- * @version $Revision$, $Date$
  */
 @ManagedResource
 public final class FileNameBased extends AbstractDateTimeProvider implements WritableDateTimeProvider {
