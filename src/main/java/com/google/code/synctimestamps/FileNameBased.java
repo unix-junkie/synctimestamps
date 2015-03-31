@@ -3,6 +3,9 @@
  */
 package com.google.code.synctimestamps;
 
+import static java.lang.String.format;
+import static org.apache.log4j.Logger.getLogger;
+
 import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -14,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -26,6 +30,8 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  */
 @ManagedResource
 public final class FileNameBased extends AbstractDateTimeProvider implements WritableDateTimeProvider {
+	private static final Logger LOGGER = getLogger(FileNameBased.class);
+
 	private Pattern fileNamePattern;
 
 	/**
@@ -126,7 +132,7 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 				/*
 				 * Assume the pattern contains exactly 2 groups.
 				 */
-				System.out.println("WARNING: group count for this matcher: " + groupCount + "; expected: 2.");
+				LOGGER.warn(format("Group count for this matcher: %d; expected: 2.", Integer.valueOf(groupCount)));
 				return file;
 			}
 			partialFileName = matcher.group(2);
@@ -142,13 +148,13 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 
 		final File targetFile = new File(file.getParentFile(), targetFileName);
 		if (targetFile.exists()) {
-			System.out.println("WARNING: I refuse to move " + fileName + " to " + targetFileName + " because the target file already exists.");
+			LOGGER.warn(format("I refuse to move %s to %s because the target file already exists.", fileName, targetFileName));
 			return file;
 		}
 
-		System.out.println("INFO: moving " + fileName + " to " + targetFileName);
+		LOGGER.info(format("Moving %s to %s", fileName, targetFileName));
 		if (!file.renameTo(targetFile)) {
-			System.out.println("ERROR: failed to move " + fileName + " to " + targetFileName);
+			LOGGER.warn(format("Failed to move %s to %s", fileName, targetFileName));
 			return file;
 		}
 

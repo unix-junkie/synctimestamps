@@ -3,9 +3,14 @@
  */
 package com.google.code.synctimestamps.io.predicates;
 
+import static java.lang.String.format;
+import static org.apache.log4j.Logger.getLogger;
+
 import java.io.File;
 
 import javax.annotation.Nullable;
+
+import org.apache.log4j.Logger;
 
 import com.google.common.base.Predicate;
 
@@ -15,6 +20,8 @@ import com.google.common.base.Predicate;
  * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class FileExists implements Predicate<File> {
+	private static final Logger LOGGER = getLogger(FileExists.class);
+
 	/**
 	 * @see Predicate#apply(Object)
 	 */
@@ -26,7 +33,7 @@ public final class FileExists implements Predicate<File> {
 
 		final boolean exists = input.exists();
 		if (!exists) {
-			System.out.println("File doesn't exist: " + input.getPath());
+			LOGGER.info(format("File doesn't exist: %s", input.getPath()));
 		}
 
 		return exists;

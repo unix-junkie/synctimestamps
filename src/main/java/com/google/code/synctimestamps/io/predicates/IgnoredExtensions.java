@@ -3,12 +3,17 @@
  */
 package com.google.code.synctimestamps.io.predicates;
 
+import static java.lang.String.format;
+import static org.apache.log4j.Logger.getLogger;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+
+import org.apache.log4j.Logger;
 
 import com.google.common.base.Predicate;
 
@@ -18,6 +23,8 @@ import com.google.common.base.Predicate;
  * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class IgnoredExtensions extends ExtensionFilter {
+	private static final Logger LOGGER = getLogger(IgnoredExtensions.class);
+
 	private final Set<String> ignoredExtensions = new HashSet<>();
 
 	/**
@@ -44,7 +51,7 @@ public final class IgnoredExtensions extends ExtensionFilter {
 
 		final String extension = getExtension(input);
 		if (extension == null || !this.ignoredExtensions.contains(extension)) {
-			System.out.println("Unknown file type: " + input.getPath());
+			LOGGER.info(format("Unknown file type: %s", input.getPath()));
 		}
 
 		/*

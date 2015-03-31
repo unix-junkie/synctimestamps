@@ -3,7 +3,9 @@
  */
 package com.google.code.synctimestamps;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.apache.log4j.Logger.getLogger;
 import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_CREATE_DATE;
 import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL;
 import static org.apache.sanselan.formats.tiff.constants.TiffTagConstants.TIFF_TAG_DATE_TIME;
@@ -19,6 +21,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.log4j.Logger;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.common.IImageMetadata;
@@ -30,6 +33,8 @@ import org.apache.sanselan.formats.tiff.constants.TagInfo;
  * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class SanselanProvider extends AbstractDateTimeProvider implements ExifBased {
+	private static final Logger LOGGER = getLogger(SanselanProvider.class);
+
 	private static final String DATE_PATTERNS[] = {
 		"yyyy:MM:dd HH:mm:ss",
 		"yyyy-MM-dd HH:mm:ss",
@@ -47,7 +52,8 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			try {
 				metadata = Sanselan.getMetadata(file);
 			} catch (final IOException ioe) {
-				System.out.println("ERROR: " + file.getPath() + ": " + ioe.getMessage());
+				LOGGER.trace(null, ioe);
+				LOGGER.error(format("%s: %s", file.getPath(), ioe.getMessage()));
 				return null;
 			}
 			if (!(metadata instanceof JpegImageMetadata)) {
@@ -105,7 +111,8 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 					final DateFormat format = new SimpleDateFormat(DATE_PATTERNS[1]);
 					return format.parse(value);
 				} catch (final ParseException pe1) {
-					System.out.println("ERROR: " + file.getPath() + ": " + pe1.getMessage());
+					LOGGER.trace(null, pe1);
+					LOGGER.error(format("%s: %s", file.getPath(), pe1.getMessage()));
 					return null;
 				}
 			}

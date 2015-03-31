@@ -6,6 +6,8 @@ package com.google.code.synctimestamps;
 import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME;
 import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME_DIGITIZED;
 import static com.drew.metadata.exif.ExifDirectory.TAG_DATETIME_ORIGINAL;
+import static java.lang.String.format;
+import static org.apache.log4j.Logger.getLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -35,6 +38,8 @@ import com.drew.metadata.exif.ExifReader;
  * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class MetadataExtractorProvider extends AbstractDateTimeProvider implements ExifBased {
+	private static final Logger LOGGER = getLogger(MetadataExtractorProvider.class);
+
 	private static final byte EMPTY[] = new byte[0];
 	/**
 	 * @see DateTimeProvider#getDateTime(File)
@@ -58,7 +63,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			try {
 				imageMetadata = imageReader.getImageMetadata(0);
 			} catch (final IIOException iioe) {
-				System.out.println("ERROR: " + file.getPath() + ": " + iioe.getMessage());
+				LOGGER.trace(null, iioe);
+				LOGGER.error(format("%s: %s", file.getPath(), iioe.getMessage()));
 				return null;
 			}
 
@@ -101,7 +107,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 		try {
 			rootNode = (IIOMetadataNode) imageMetadata.getAsTree("javax_imageio_jpeg_image_1.0");
 		} catch (final IllegalArgumentException iae) {
-			System.out.println("ERROR: " + file.getPath() + ": " + iae.getMessage());
+			LOGGER.trace(null, iae);
+			LOGGER.error(format("%s: %s", file.getPath(), iae.getMessage()));
 			return EMPTY;
 		}
 		final IIOMetadataNode exifNode = findExifNode(rootNode);
