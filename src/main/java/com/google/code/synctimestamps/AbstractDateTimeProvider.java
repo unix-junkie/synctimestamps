@@ -6,6 +6,8 @@ package com.google.code.synctimestamps;
 import java.io.File;
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$
@@ -28,9 +30,10 @@ public abstract class AbstractDateTimeProvider implements DateTimeProvider {
 	 * @see DateTimeProvider#updateDateTime(File, Date)
 	 */
 	@Override
-	public final void updateDateTime(final File file, final Date parentDateTime) {
+	public final void updateDateTime(final File file, @Nullable final Date parentDateTime) {
 		final boolean parentDateTimeNull = parentDateTime == null;
 
+		@SuppressWarnings("null")
 		final File targetFile = parentDateTimeNull || !(this instanceof WritableDateTimeProvider)
 				? file
 				: ((WritableDateTimeProvider) this).setDateTime(file, parentDateTime);

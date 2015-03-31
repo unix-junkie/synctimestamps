@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -78,6 +81,8 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 	 * @see DateTimeProvider#getDateTime(File)
 	 */
 	@Override
+	@Nullable
+	@CheckForNull
 	public Date getDateTime(final File file) {
 		final String fileName = file.getName();
 		final Matcher matcher = this.fileNamePattern.matcher(fileName);
@@ -105,7 +110,7 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 	 * @see WritableDateTimeProvider#setDateTime(File, Date)
 	 */
 	@Override
-	public File setDateTime(final File file, final Date dateTime) {
+	public File setDateTime(final File file, @Nullable final Date dateTime) {
 		final String fileName = file.getName();
 		final Matcher matcher = this.fileNamePattern.matcher(fileName);
 

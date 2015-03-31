@@ -14,6 +14,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.common.IImageMetadata;
@@ -36,6 +39,8 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 	 * @see DateTimeProvider#getDateTime(File)
 	 */
 	@Override
+	@Nullable
+	@CheckForNull
 	public Date getDateTime(final File file) {
 		try {
 			final IImageMetadata metadata;
@@ -77,6 +82,8 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 	 * @param jpegMetadata
 	 * @param tagInfo
 	 */
+	@Nullable
+	@CheckForNull
 	private Date getDateTime(final File file, final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
 		try {
 			final TiffField field = jpegMetadata.findEXIFValue(tagInfo);

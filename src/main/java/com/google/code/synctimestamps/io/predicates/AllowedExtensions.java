@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Predicate;
 
 /**
@@ -34,7 +36,11 @@ public final class AllowedExtensions extends ExtensionFilter {
 	 * @see Predicate#apply(Object)
 	 */
 	@Override
-	public boolean apply(final File input) {
+	public boolean apply(@Nullable final File input) {
+		if (input == null) {
+			return false;
+		}
+
 		final String extension = getExtension(input);
 		return extension != null && this.allowedExtensions.contains(extension);
 	}

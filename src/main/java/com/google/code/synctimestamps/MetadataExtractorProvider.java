@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -39,6 +41,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 	 * @see DateTimeProvider#getDateTime(File)
 	 */
 	@Override
+	@Nullable
+	@CheckForNull
 	public Date getDateTime(final File file) {
 		try {
 			final ImageInputStream in = ImageIO.createImageInputStream(file);
@@ -104,6 +108,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 	/**
 	 * @param node
 	 */
+	@Nullable
+	@CheckForNull
 	private static IIOMetadataNode findExifNode(final IIOMetadataNode node) {
 		if (isExifNode(node)) {
 			return node;
@@ -154,6 +160,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 	 * @param directory
 	 * @param tagType
 	 */
+	@Nullable
+	@CheckForNull
 	private static Date getDateTime(final Directory directory, final int tagType) {
 		try {
 			if (!directory.containsTag(tagType)) {
