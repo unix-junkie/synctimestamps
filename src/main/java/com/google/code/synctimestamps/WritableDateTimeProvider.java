@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.Date;
 
 /**
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public interface WritableDateTimeProvider extends DateTimeProvider {
 	/**

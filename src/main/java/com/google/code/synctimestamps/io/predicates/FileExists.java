@@ -12,7 +12,7 @@ import com.google.common.base.Predicate;
 /**
  * This predicate has a side-effect.
  *
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class FileExists implements Predicate<File> {
 	/**

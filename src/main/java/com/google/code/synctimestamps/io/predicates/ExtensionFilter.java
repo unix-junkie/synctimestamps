@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Predicate;
 
 /**
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public abstract class ExtensionFilter implements Predicate<File> {
 	/**

@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.Date;
 
 /**
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public final class MtimeBased extends AbstractDateTimeProvider implements WritableDateTimeProvider {
 	/**
