@@ -68,8 +68,9 @@ abstract class Main {
 		 * 2. If name matches the input pattern, rename
 		 * 3. Rename according to the mtime
 		 */
+		final Predicate<File> predicate = CONTEXT.getBean("predicate", Predicate.class);
 		final DateTimeProvider exifBased = CONTEXT.getBean("exifBased", DateTimeProvider.class);
-		for (final File file : listFilesRecursively(root, CONTEXT.getBean("predicate", Predicate.class))) {
+		for (final File file : listFilesRecursively(root, predicate)) {
 			exifBased.updateDateTime(file, null);
 		}
 
