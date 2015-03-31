@@ -9,7 +9,7 @@ import java.util.Date;
 import javax.annotation.Nullable;
 
 /**
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public abstract class AbstractDateTimeProvider implements DateTimeProvider {
 	private WritableDateTimeProvider next;

@@ -22,7 +22,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  * Returns image timestamp based on its file name, provided that one
  * matches a certain pattern.
  *
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 @ManagedResource
 public final class FileNameBased extends AbstractDateTimeProvider implements WritableDateTimeProvider {

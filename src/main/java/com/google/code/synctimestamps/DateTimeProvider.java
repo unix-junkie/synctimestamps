@@ -10,7 +10,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 /**
- * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
+ * @author Andrey ``Bass'' Shcheglov &lt;mailto:andrewbass@gmail.com&gt;
  */
 public interface DateTimeProvider {
 	/**
