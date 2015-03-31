@@ -26,7 +26,7 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.6.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:slf4j-log4j12:1.6.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:1.3.9" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.0" level="project" />
     <orderEntry type="library" name="Maven: com.github.unix-junkie:christmas:0.0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.11.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.4" level="project" />
