@@ -32,6 +32,18 @@ public abstract class ExtensionFilter implements Predicate<File> {
 	 *
 	 * <p>Added purely for {@code null} analysis.</p>
 	 *
+	 * @see Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>Added purely for {@code null} analysis.</p>
+	 *
 	 * @see Object#equals(Object)
 	 */
 	@Override

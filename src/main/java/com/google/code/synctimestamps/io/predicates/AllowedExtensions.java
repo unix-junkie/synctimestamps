@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
@@ -17,7 +18,7 @@ import com.google.common.base.Predicate;
  * @version $Revision$, $Date$
  */
 public final class AllowedExtensions extends ExtensionFilter {
-	private final Set<String> allowedExtensions = new HashSet<String>();
+	private final Set<String> allowedExtensions = new HashSet<>();
 
 	/**
 	 * @param allowedExtensions
@@ -48,6 +49,8 @@ public final class AllowedExtensions extends ExtensionFilter {
 	/**
 	 * @see Object#toString()
 	 */
+	@Nullable
+	@CheckForNull
 	@Override
 	public String toString() {
 		return this.allowedExtensions.toString();

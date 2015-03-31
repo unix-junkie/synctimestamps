@@ -3,6 +3,7 @@
  */
 package com.google.code.synctimestamps;
 
+import static java.util.Arrays.asList;
 import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_CREATE_DATE;
 import static org.apache.sanselan.formats.tiff.constants.ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL;
 import static org.apache.sanselan.formats.tiff.constants.TiffTagConstants.TIFF_TAG_DATE_TIME;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.sanselan.ImageReadException;
@@ -59,8 +61,8 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			 * but still add DateTimeOriginal and/or DateTimeDigitized.
 			 */
 			final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-			for (final TagInfo tagInfo : new TagInfo[]{TIFF_TAG_DATE_TIME, EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE}) {
-				final Date dateTime = this.getDateTime(file, jpegMetadata, tagInfo);
+			for (@Nonnull final TagInfo tagInfo : asList(TIFF_TAG_DATE_TIME, EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE)) {
+				final Date dateTime = getDateTime(file, jpegMetadata, tagInfo);
 				if (dateTime == null) {
 					continue;
 				}
@@ -84,7 +86,7 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 	 */
 	@Nullable
 	@CheckForNull
-	private Date getDateTime(final File file, final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
+	private static Date getDateTime(final File file, final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
 		try {
 			final TiffField field = jpegMetadata.findEXIFValue(tagInfo);
 			if (field == null) {

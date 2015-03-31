@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
@@ -54,6 +55,7 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			final ImageReader imageReader = it.next();
 			imageReader.setInput(in);
 
+			@Nonnull
 			final IIOMetadata imageMetadata;
 			try {
 				imageMetadata = imageReader.getImageMetadata(0);
@@ -68,6 +70,8 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			}
 			final ExifReader exifReader = new ExifReader(exifInfo);
 			final Metadata metadata = exifReader.extract();
+			@Nonnull
+			@SuppressWarnings("null")
 			final Directory directory = metadata.getDirectory(ExifDirectory.class);
 
 			/*-
@@ -94,6 +98,7 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 	 * @param imageMetadata
 	 */
 	private static byte[] getExifInfo(final File file, final IIOMetadata imageMetadata) {
+		@Nonnull
 		final IIOMetadataNode rootNode;
 		try {
 			rootNode = (IIOMetadataNode) imageMetadata.getAsTree("javax_imageio_jpeg_image_1.0");

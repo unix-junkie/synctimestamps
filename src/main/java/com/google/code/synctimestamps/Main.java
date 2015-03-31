@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -31,7 +33,7 @@ abstract class Main {
 	}
 
 	private static List<File> listFilesRecursively(final File root, final Predicate<File> predicate) {
-		final List<File> files = new ArrayList<File>();
+		final List<File> files = new ArrayList<>();
 		if (root.isDirectory()) {
 			final File children[] = root.listFiles();
 			/*
@@ -39,7 +41,7 @@ abstract class Main {
 			 * instead of a zero-length array.
 			 */
 			if (children != null) {
-				for (final File child : root.listFiles()) {
+				for (@Nonnull final File child : root.listFiles()) {
 					files.addAll(listFilesRecursively(child, predicate));
 				}
 			}
@@ -68,9 +70,11 @@ abstract class Main {
 		 * 2. If name matches the input pattern, rename
 		 * 3. Rename according to the mtime
 		 */
+		@Nonnull
+		@SuppressWarnings({ "null", "unchecked" })
 		final Predicate<File> predicate = CONTEXT.getBean("predicate", Predicate.class);
 		final DateTimeProvider exifBased = CONTEXT.getBean("exifBased", DateTimeProvider.class);
-		for (final File file : listFilesRecursively(root, predicate)) {
+		for (@Nonnull final File file : listFilesRecursively(root, predicate)) {
 			exifBased.updateDateTime(file, null);
 		}
 

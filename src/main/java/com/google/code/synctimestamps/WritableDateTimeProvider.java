@@ -6,8 +6,6 @@ package com.google.code.synctimestamps;
 import java.io.File;
 import java.util.Date;
 
-import javax.annotation.Nullable;
-
 /**
  * @author Andrew ``Bass'' Shcheglov (andrewbass@gmail.com)
  * @author $Author$

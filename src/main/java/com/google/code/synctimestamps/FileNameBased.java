@@ -38,6 +38,8 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 
 	private char separator;
 
+	@Nullable
+	@CheckForNull
 	@ManagedAttribute
 	public String getFileNamePattern() {
 		return this.fileNamePattern.pattern();
@@ -51,6 +53,8 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 		this.fileNamePattern = Pattern.compile(fileNamePattern);
 	}
 
+	@Nullable
+	@CheckForNull
 	@ManagedAttribute
 	public String getDateFormatPattern() {
 		return this.dateFormatPattern;
