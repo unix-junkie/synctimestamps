@@ -82,7 +82,7 @@ public final class MetadataExtractorProvider extends AbstractDateTimeProvider im
 			 * Certain digital cameras don't add any DateTime tag,
 			 * but still add DateTimeOriginal and/or DateTimeDigitized.
 			 */
-			for (final int tagType : new int[]{TAG_DATETIME, TAG_DATETIME_ORIGINAL, TAG_DATETIME_DIGITIZED}) {
+			for (final int tagType : new int[]{TAG_DATETIME_ORIGINAL, TAG_DATETIME_DIGITIZED, TAG_DATETIME}) {
 				final Date dateTime = getDateTime(directory, tagType);
 				if (dateTime == null) {
 					continue;

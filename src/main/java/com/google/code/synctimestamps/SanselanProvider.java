@@ -65,7 +65,7 @@ public final class SanselanProvider extends AbstractDateTimeProvider implements 
 			 * but still add DateTimeOriginal and/or DateTimeDigitized.
 			 */
 			final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
-			for (@Nonnull final TagInfo tagInfo : asList(TIFF_TAG_DATE_TIME, EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE)) {
+			for (@Nonnull final TagInfo tagInfo : asList(EXIF_TAG_DATE_TIME_ORIGINAL, EXIF_TAG_CREATE_DATE, TIFF_TAG_DATE_TIME)) {
 				final Date dateTime = getDateTime(file, jpegMetadata, tagInfo);
 				if (dateTime == null) {
 					continue;
