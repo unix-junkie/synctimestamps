@@ -16,7 +16,6 @@
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<google.collections.version>1.0</google.collections.version>
 		<log4j.version>1.2.16</log4j.version>
-		<slf4j.version>1.6.1</slf4j.version>
 	</properties>
 
 	<build>
@@ -145,19 +144,7 @@
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
 			<type>jar</type>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
-			<type>jar</type>
-			<scope>runtime</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -169,11 +156,6 @@
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
 			<version>3.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.unix-junkie</groupId>
-			<artifactId>christmas</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

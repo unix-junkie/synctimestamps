@@ -22,20 +22,9 @@
     <orderEntry type="library" name="Maven: aopalliance:aopalliance:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:3.0.5.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: com.google.collections:google-collections:1.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: log4j:log4j:1.2.16" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.6.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:slf4j-log4j12:1.6.1" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.0" level="project" />
-    <orderEntry type="library" name="Maven: com.github.unix-junkie:christmas:0.0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.11.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.11.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-xml_2.11:1.0.2" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.2" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-actors:2.11.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-swing:2.10.4" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-dbc:2.10.0-M2" level="project" />
   </component>
 </module>
 

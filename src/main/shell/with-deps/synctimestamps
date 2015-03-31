@@ -12,8 +12,6 @@ CLASSPATH="\
 `dirname $0`/../share/synctimestamps/log4j-${log4j.version}.jar:\
 `dirname $0`/../share/synctimestamps/metadata-extractor-${metadata.extractor.version}.jar:\
 `dirname $0`/../share/synctimestamps/sanselan-${sanselan.version}.jar:\
-`dirname $0`/../share/synctimestamps/slf4j-api-${slf4j.version}.jar:\
-`dirname $0`/../share/synctimestamps/slf4j-log4j12-${slf4j.version}.jar:\
 `dirname $0`/../share/synctimestamps/spring-aop-${spring.version}.jar:\
 `dirname $0`/../share/synctimestamps/spring-asm-${spring.version}.jar:\
 `dirname $0`/../share/synctimestamps/spring-beans-${spring.version}.jar:\
