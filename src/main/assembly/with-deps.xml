@@ -31,6 +31,15 @@
 			</includes>
 		</fileSet>
 		<fileSet>
+			<directory>${project.build.resourceDirectory}</directory>
+			<outputDirectory>etc/${project.artifactId}</outputDirectory>
+			<fileMode>0644</fileMode>
+			<filtered>false</filtered>
+			<includes>
+				<include>log4j.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet>
 			<directory>${project.build.directory}</directory>
 			<outputDirectory>share/java</outputDirectory>
 			<fileMode>0644</fileMode>
