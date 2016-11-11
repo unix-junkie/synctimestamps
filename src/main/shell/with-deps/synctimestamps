@@ -4,32 +4,35 @@
 #
 
 # "uname -o" is unavailable in OpenBSD and Solaris
-case `uname -s` in
+case $(uname -s) in
 	CYGWIN_NT-*)
+		STS_HOME="$(cygpath -w "$(dirname $0)/..")"
 		PATH_SEP=';'
 		;;
 	*)
+		STS_HOME="$(dirname $0)/.."
 		PATH_SEP=':'
 		;;
 esac
 
 CLASSPATH="\
-$(dirname $0)/../etc/${project.artifactId}${PATH_SEP}\
-$(dirname $0)/../share/java/${project.artifactId}-${project.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/aopalliance-1.0.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/commons-logging-1.1.1.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/google-collections-${google.collections.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/log4j-${log4j.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/metadata-extractor-${metadata.extractor.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/sanselan-${sanselan.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-aop-${spring.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-asm-${spring.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-beans-${spring.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-context-${spring.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-core-${spring.version}.jar${PATH_SEP}\
-$(dirname $0)/../share/synctimestamps/spring-expression-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/etc/${project.artifactId}${PATH_SEP}\
+${STS_HOME}/share/java/${project.artifactId}-${project.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/aopalliance-1.0.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/commons-logging-1.1.1.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/google-collections-${google.collections.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/log4j-${log4j.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/metadata-extractor-${metadata.extractor.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/sanselan-${sanselan.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-aop-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-asm-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-beans-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-context-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-core-${spring.version}.jar${PATH_SEP}\
+${STS_HOME}/share/synctimestamps/spring-expression-${spring.version}.jar${PATH_SEP}\
 "
 
+unset STS_HOME
 unset PATH_SEP
 
 export CLASSPATH
