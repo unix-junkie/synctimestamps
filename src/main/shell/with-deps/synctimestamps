@@ -3,22 +3,35 @@
 # $Id$
 #
 
+# "uname -o" is unavailable in OpenBSD and Solaris
+case `uname -s` in
+	CYGWIN_NT-*)
+		PATH_SEP=';'
+		;;
+	*)
+		PATH_SEP=':'
+		;;
+esac
+
 CLASSPATH="\
-`dirname $0`/../etc/${project.artifactId}:\
-`dirname $0`/../share/java/${project.artifactId}-${project.version}.jar:\
-`dirname $0`/../share/synctimestamps/aopalliance-1.0.jar:\
-`dirname $0`/../share/synctimestamps/commons-logging-1.1.1.jar:\
-`dirname $0`/../share/synctimestamps/google-collections-${google.collections.version}.jar:\
-`dirname $0`/../share/synctimestamps/log4j-${log4j.version}.jar:\
-`dirname $0`/../share/synctimestamps/metadata-extractor-${metadata.extractor.version}.jar:\
-`dirname $0`/../share/synctimestamps/sanselan-${sanselan.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-aop-${spring.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-asm-${spring.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-beans-${spring.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-context-${spring.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-core-${spring.version}.jar:\
-`dirname $0`/../share/synctimestamps/spring-expression-${spring.version}.jar:\
+$(dirname $0)/../etc/${project.artifactId}${PATH_SEP}\
+$(dirname $0)/../share/java/${project.artifactId}-${project.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/aopalliance-1.0.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/commons-logging-1.1.1.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/google-collections-${google.collections.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/log4j-${log4j.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/metadata-extractor-${metadata.extractor.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/sanselan-${sanselan.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-aop-${spring.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-asm-${spring.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-beans-${spring.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-context-${spring.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-core-${spring.version}.jar${PATH_SEP}\
+$(dirname $0)/../share/synctimestamps/spring-expression-${spring.version}.jar${PATH_SEP}\
 "
+
+unset PATH_SEP
+
 export CLASSPATH
 
 java com.google.code.synctimestamps.Main "$@"
