@@ -82,7 +82,7 @@ public class FileNameBasedTest {
 		dateTimeProvider.setDateFormatPattern("yyyy-MM-dd_HH-mm-ss");
 		dateTimeProvider.setSeparator('_');
 
-		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").parse("1971-04-12_09-07-00");
+		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1971-04-12 09:07:00");
 
 		final Path file0 = createFile(workingDir.resolve("1971-04-12_09-07-00_name.jpg"));
 		final Date dateTime0 = dateTimeProvider.getDateTime(file0);
@@ -106,7 +106,7 @@ public class FileNameBasedTest {
 		dateTimeProvider.setSeparator('_');
 		dateTimeProvider.setNext(new MtimeBased());
 
-		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").parse("1971-04-12_09-07-00");
+		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1971-04-12 09:07:00");
 
 		final Path file0 = createFile(workingDir.resolve("1971-04-12_09-07-00_name.jpg"));
 
@@ -117,5 +117,63 @@ public class FileNameBasedTest {
 
 		assertThat(getLastModifiedTime(file0).toMillis()).isEqualTo(referenceDate.getTime());
 		assertThat(getLastModifiedTime(file1).toMillis()).isEqualTo(referenceDate.getTime());
+	}
+
+	/**
+	 * <p>Tests file name format used by <em>Xiaomi Redmi Note 4X</em>.</p>
+	 *
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void testSingleWithPattern2() throws IOException, ParseException {
+		final Path workingDir = WORKING_DIR.get();
+
+		final FileNameBased dateTimeProvider = new FileNameBased();
+		dateTimeProvider.setFileNamePattern(".+_(\\d{8}_\\d{6})(\\.[^\\.]+)");
+		dateTimeProvider.setDateFormatPattern("yyyyMMdd_HHmmss");
+		dateTimeProvider.setSeparator('_');
+
+		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1971-04-12 09:07:00");
+
+		final Path file0 = createFile(workingDir.resolve("img_19710412_090700.jpg"));
+		final Date dateTime0 = dateTimeProvider.getDateTime(file0);
+		assertThat(dateTime0).isNotNull().isEqualTo(referenceDate);
+		assertThat(dateTime0.getTime()).isNotEqualTo(getLastModifiedTime(file0).toMillis());
+
+		final Path file1 = createFile(workingDir.resolve("vid_19710412_090700.mp4"));
+		final Date dateTime1 = dateTimeProvider.getDateTime(file1);
+		assertThat(dateTime1).isNotNull().isEqualTo(referenceDate);
+		assertThat(dateTime1.getTime()).isNotEqualTo(getLastModifiedTime(file1).toMillis());
+	}
+
+	/**
+	 * <p>Tests file name format used by <em>WhatsApp</em>.</p>
+	 *
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void testSingleWithPattern3() throws IOException, ParseException {
+		final Path workingDir = WORKING_DIR.get();
+
+		final FileNameBased dateTimeProvider = new FileNameBased();
+		dateTimeProvider.setFileNamePattern(".+\\-(\\d{8})(\\-wa\\d{4}\\.[^\\.]+)");
+		dateTimeProvider.setDateFormatPattern("yyyyMMdd");
+		dateTimeProvider.setSeparator('_');
+
+		final Date referenceDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1971-04-12 00:00:00");
+
+		final Path file0 = createFile(workingDir.resolve("img-19710412-wa0041.jpg"));
+		final Date dateTime0 = dateTimeProvider.getDateTime(file0);
+		assertThat(dateTime0).isNotNull().isEqualTo(referenceDate);
+		assertThat(dateTime0.getTime()).isNotEqualTo(getLastModifiedTime(file0).toMillis());
+
+		final Path file1 = createFile(workingDir.resolve("vid-19710412-wa0004.mp4"));
+		final Date dateTime1 = dateTimeProvider.getDateTime(file1);
+		assertThat(dateTime1).isNotNull().isEqualTo(referenceDate);
+		assertThat(dateTime1.getTime()).isNotEqualTo(getLastModifiedTime(file1).toMillis());
 	}
 }
