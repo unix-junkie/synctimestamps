@@ -50,6 +50,9 @@ public final class FileNameBased extends AbstractDateTimeProvider implements Wri
 	}
 
 	/**
+	 * <p>The file name pattern. Expected to contain exactly two capturing
+	 * groups.</p>
+	 *
 	 * @param fileNamePattern
 	 */
 	@Required

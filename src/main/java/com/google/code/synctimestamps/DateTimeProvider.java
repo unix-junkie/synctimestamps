@@ -14,7 +14,12 @@ import javax.annotation.Nullable;
  */
 public interface DateTimeProvider {
 	/**
+	 * <p>Returns the timestamp of a file on the file system, or {@code
+	 * null} if this provider can't determine the timestamp, or the
+	 * timestamp is before Jan 1st, 1970.</p>
+	 *
 	 * @param file
+	 * @return the timestamp of a file, or {@code null}.
 	 */
 	@Nullable
 	@CheckForNull
