@@ -13,7 +13,7 @@
 		<project.build.resourceDirectory>${basedir}/src/main/resources</project.build.resourceDirectory>
 		<metadata.extractor.version>2.4.0-beta-1</metadata.extractor.version>
 		<sanselan.version>0.97-incubator</sanselan.version>
-		<spring.version>3.0.5.RELEASE</spring.version>
+		<spring.version>5.2.2.RELEASE</spring.version>
 		<google.collections.version>1.0</google.collections.version>
 		<log4j.version>1.2.16</log4j.version>
 	</properties>
