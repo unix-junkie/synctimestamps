@@ -11,7 +11,7 @@
 		<project.build.shellSourceDirectory>${basedir}/src/main/shell</project.build.shellSourceDirectory>
 		<!-- TODO: is there a standard name for this? -->
 		<project.build.resourceDirectory>${basedir}/src/main/resources</project.build.resourceDirectory>
-		<metadata.extractor.version>2.16.0</metadata.extractor.version>
+		<metadata.extractor.version>2.18.0</metadata.extractor.version>
 		<sanselan.version>0.97-incubator</sanselan.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<google.collections.version>1.0</google.collections.version>
